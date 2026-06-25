@@ -276,5 +276,34 @@ export const getUserInfo = CatchAsyncErrors(
   },
 );
 
-
 // social auths
+interface ISocialAuthRequest {
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export const socialAuth = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name, email, avatar } = req.body as ISocialAuthRequest;
+      const user = await userModel.findOne({ email });
+
+      if (!user) {
+        const newUser = await userModel.create({
+          name,
+          email,
+          avatar: {
+            public_id: "",
+            url: avatar,
+          },
+        });
+        sendToken(newUser, 200, res as any);
+      } else {
+        sendToken(user, 200, res as any);
+      }
+    } catch (error) {
+      return next(new ErrorHandler("Failed to authenticate user", 500));
+    }
+  },
+);
