@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Learning Activation Email</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #f4f7fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .email-container {
+      max-width: 520px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 20, 40, 0.08);
+      padding: 40px 35px;
+      transition: all 0.2s ease;
+      border: 1px solid #e9edf4;
+    }
+    .logo-area {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .logo-area h2 {
+      font-weight: 600;
+      font-size: 26px;
+      letter-spacing: -0.3px;
+      color: #0b1e33;
+    }
+    .logo-area span {
+      color: #3b82f6;
+    }
+    .greeting {
+      font-size: 18px;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 12px;
+    }
+    .message {
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 16px 0 22px 0;
+    }
+    .code-box {
+      background: #f8faff;
+      border: 1px dashed #b9c8e0;
+      border-radius: 18px;
+      padding: 18px 10px;
+      text-align: center;
+      margin: 20px 0 24px 0;
+    }
+    .code-box .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .code-value {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: #0b1e33;
+      background: #ffffff;
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .code-value.otp {
+      letter-spacing: 12px;
+      font-size: 38px;
+    }
+    .btn-primary {
+      display: inline-block;
+      background-color: #3b82f6;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 10px 0 18px 0;
+      transition: background 0.2s;
+      border: none;
+      box-shadow: 0 6px 14px rgba(59, 130, 246, 0.25);
+    }
+    .btn-primary:hover {
+      background-color: #2563eb;
+      box-shadow: 0 8px 18px rgba(59, 130, 246, 0.35);
+    }
+    .divider {
+      border: 0;
+      height: 1px;
+      background: linear-gradient(to right, #e2e8f0, #cbd5e1, #e2e8f0);
+      margin: 28px 0 22px 0;
+    }
+    .info-text {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.5;
+      margin: 8px 0;
+    }
+    .info-text strong {
+      color: #1e293b;
+    }
+    .expiry {
+      background: #f1f5f9;
+      border-radius: 40px;
+      padding: 8px 16px;
+      display: inline-block;
+      font-size: 13px;
+      color: #1e293b;
+      margin-top: 6px;
+    }
+    .footer {
+      margin-top: 32px;
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      border-top: 1px solid #eef2f6;
+      padding-top: 24px;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 30px;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 480px) {
+      .email-container { padding: 28px 18px; }
+      .code-value { font-size: 28px; letter-spacing: 6px; }
+      .code-value.otp { font-size: 32px; letter-spacing: 10px; }
+      .btn-primary { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="email-container">
+  
+  <!-- Logo / Brand -->
+  <div class="logo-area">
+    <h1>Welcome to E-Learning</h1>
+    <h2>🔐 <span>Secure</span>Activate</h2>
+    <div class="badge">ACCOUNT VERIFICATION</div>
+  </div>
+
+  <!-- Greeting -->
+  <div class="greeting">
+    Hello <%= user.name || 'there' %> 👋
+  </div>
+
+  <!-- Main message -->
+  <p class="message">
+    Thanks for joining us! Please use the <strong><%= activationType === 'otp' ? 'One‑Time Password (OTP)' : 'activation code' %></strong> below to activate your account. 
+    This ensures your email address is valid and keeps your account secure.
+  </p>
+
+  <!-- CODE / OTP BOX -->
+  <div class="code-box">
+    <div class="label">
+      <%= activationType === 'otp' ? '🔑 YOUR OTP' : '🔐 ACTIVATION CODE' %>
+    </div>
+    <div class="code-value <%= activationType === 'otp' ? 'otp' : '' %>">
+      <%= activationCode %>
+    </div>
+    <div style="margin-top: 8px; font-size: 13px; color: #475569;">
+      expires in <strong><%= expiryMinutes || 5 %> minutes</strong>
+    </div>
+  </div>
+
+  <!-- Action button (for activation code flow) -->
+  <% if (activationType !== 'otp') { %>
+    <div style="text-align: center;">
+      <a href="<%= activationLink %>" class="btn-primary" target="_blank">
+        Activate my account →
+      </a>
+    </div>
+    <p style="font-size: 14px; text-align: center; color: #64748b; margin-top: 4px;">
+      Or copy this link into your browser:
+    </p>
+    <p style="font-size: 13px; word-break: break-all; background: #f8fafc; padding: 8px 12px; border-radius: 12px; color: #2563eb; text-align: center; border: 1px solid #e2e8f0;">
+      <%= activationLink %>
+    </p>
+  <% } else { %>
+    <!-- For OTP: instruction to enter the code manually -->
+    <div style="background: #f1f5f9; border-radius: 16px; padding: 14px 18px; margin: 10px 0 0 0; text-align: center;">
+      <span style="font-size: 14px; color: #1e293b;">➡️ Enter this OTP on the activation screen to verify your account.</span>
+    </div>
+  <% } %>
+
+  <hr class="divider" />
+
+  <!-- Additional info -->
+  <div class="info-text">
+    <strong>🔹 Didn't request this?</strong> You can safely ignore this email. No changes will be made to your account.
+  </div>
+  <div class="info-text">
+    <strong>🔹 Need help?</strong> Contact our support team at 
+    <a href="mailto:support@secureactivate.com">support@secureactivate.com</a>
+  </div>
+
+ 
+  <!-- Footer -->
+  <div class="footer">
+    <p>
+      &copy; 2026 SecureActivate Inc. All rights reserved.<br />
+      123 Security Blvd, Suite 100, San Francisco, CA 94105
+    </p>
+    <p style="margin-top: 4px;">
+      <a href="#">Privacy Policy</a> &bull; <a href="#">Terms of Service</a>
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

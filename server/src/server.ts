@@ -1,6 +1,6 @@
-import { app } from "./app";
-import connectDB from "./utils/db";
-require("dotenv").config();
+import { app } from "./app.js";
+import connectDB from "./utils/db.js";
+import "dotenv/config";
 
 // create a server using the express app
 app.listen(process.env.PORT, () => {
