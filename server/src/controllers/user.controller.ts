@@ -2,11 +2,17 @@ import { type Request, type Response, type NextFunction } from "express";
 import userModel, { IUser } from "../models/user.model.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
 import { CatchAsyncErrors } from "../middleware/catchAsyncErrors.js";
-import jwt, { type Secret } from "jsonwebtoken";
+import jwt, { JwtPayload, type Secret } from "jsonwebtoken";
 import ejs from "ejs";
 import path from "path";
 import sendEmail from "../utils/sendMail.js";
-import { sendToken } from "../utils/jwt.js";
+import {
+  accessTokenOptions,
+  refreshTokenOptions,
+  sendToken,
+} from "../utils/jwt.js";
+import { redis } from "../utils/redis.js";
+import { getUserById } from "../services/user.service.js";
 
 interface IRegisterationBody {
   name: string;
@@ -140,7 +146,7 @@ export const LoginUser = CatchAsyncErrors(
     try {
       const { email, password }: ILoginRequest = req.body as ILoginRequest;
 
-      if(!email || !password) {
+      if (!email || !password) {
         return next(new ErrorHandler("Please provide email and password", 400));
       }
 
@@ -157,9 +163,118 @@ export const LoginUser = CatchAsyncErrors(
       }
 
       sendToken(user, 200, res as any);
-
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
   },
 );
+
+// Logout user by clearing the cookies
+export const logoutUser = CatchAsyncErrors(
+  async (req: Request, res: Response) => {
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+
+    const userId = req.user?._id?.toString() || "";
+    if (userId) {
+      await redis.del(userId);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  },
+);
+
+// validate user role
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: Request, res: Response, next: Function) => {
+    if (!req.user || !roles.includes(req.user.role || "")) {
+      return next(
+        new ErrorHandler(
+          `role: ${req.user?.role} is not allowed to access this resource`,
+          403,
+        ),
+      );
+    }
+    next();
+  };
+};
+
+// update access token
+export const updateAccessToken = CatchAsyncErrors(
+  async (req: Request, res: Response, next: Function) => {
+    try {
+      const refresh_Token = req.cookies.refresh_token;
+      const decoded = jwt.verify(
+        refresh_Token,
+        (process.env.REFRESH_TOKEN as string) || "",
+      ) as JwtPayload;
+
+      if (!decoded) {
+        return next(
+          new ErrorHandler("Invalid refresh token. Please log in again.", 401),
+        );
+      }
+
+      const session = await redis.get(decoded.id as string);
+
+      if (!session) {
+        return next(
+          new ErrorHandler("User not found. Please log in again.", 404),
+        );
+      }
+
+      const user = JSON.parse(session) as IUser;
+
+      const accessToken = jwt.sign(
+        {
+          id: user._id,
+        },
+        (process.env.ACCESS_TOKEN as string) || "",
+        {
+          expiresIn: 5 * 60, // 5 minutes
+        },
+      );
+
+      const refreshToken = jwt.sign(
+        {
+          id: user._id,
+        },
+        (process.env.REFRESH_TOKEN as string) || "",
+        {
+          expiresIn: 3 * 24 * 60 * 60, // 3 days
+        },
+      );
+
+      res.cookie("access_token", accessToken, accessTokenOptions);
+      res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+      res.status(200).json({
+        success: true,
+        accessToken,
+      });
+    } catch (error) {
+      return next(new ErrorHandler("Failed to update access token", 500));
+    }
+  },
+);
+
+// get user info
+export const getUserInfo = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id?.toString() || "";
+
+      req.params.id = userId;
+
+      return getUserById(req, res, next);
+    } catch (error) {
+      return next(new ErrorHandler("Failed to get user info", 500));
+    }
+  },
+);
+
+
+// social auths

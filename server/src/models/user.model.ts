@@ -88,7 +88,10 @@ userSchema.pre<IUser>("save", async function () {
 userSchema.methods.SignAccessToken = function () {
   return jwt.sign(
     { id: this._id, role: this.role },
-    process.env.ACCESS_TOKEN || "",
+    (process.env.ACCESS_TOKEN as string) || "",
+    {
+      expiresIn: 5 * 60, // 5 minutes
+    },
   );
 };
 
@@ -96,7 +99,10 @@ userSchema.methods.SignAccessToken = function () {
 userSchema.methods.SignRefreshToken = function (): string {
   return jwt.sign(
     { id: this._id, role: this.role },
-    process.env.REFRESH_TOKEN || "",
+    (process.env.REFRESH_TOKEN as string) || "",
+    {
+      expiresIn: 3 * 24 * 60 * 60, // 3 days
+    },
   );
 };
 
