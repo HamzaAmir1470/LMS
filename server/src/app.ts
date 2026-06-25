@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import ErrorMiddleware from "../src/middleware/error.js";
 import userRouter from "./routes/user.route.js";
+import courseRouter from "./routes/course.route.js";
 export const app = express();
 
 app.use(
@@ -18,6 +19,8 @@ app.use(express.json({ limit: "50mb" }));
 
 // Routes
 app.use("/api/v1", userRouter);
+
+app.use("/api/v1/course", courseRouter);
 
 // Testing API
 app.get("/test", (req: Request, res: Response) => {
