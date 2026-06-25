@@ -13,6 +13,7 @@ import {
 } from "../utils/jwt.js";
 import { redis } from "../utils/redis.js";
 import { getUserById } from "../services/user.service.js";
+import cloudinary from "cloudinary";
 
 interface IRegisterationBody {
   name: string;
@@ -376,7 +377,7 @@ export const updateUserPassword = CatchAsyncErrors(
       await user.save();
 
       await redis.set(user._id.toString(), JSON.stringify(user));
-      
+
       res.status(200).json({
         success: true,
         message: "Password updated successfully",
@@ -384,6 +385,52 @@ export const updateUserPassword = CatchAsyncErrors(
       });
     } catch (error) {
       return next(new ErrorHandler("Failed to update user password", 500));
+    }
+  },
+);
+
+// update profile picture
+interface IUpdateProfilePicture {
+  avatar: string;
+}
+export const updateProfilePicture = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body as IUpdateProfilePicture;
+      const userId = req.user?._id?.toString() || "";
+      const user = await userModel.findById(userId);
+
+      if (avatar && user) {
+        if (user?.avatar?.public_id) {
+          await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+          const result = await cloudinary.v2.uploader.upload(avatar, {
+            folder: "avatars",
+            width: 150,
+          });
+          user.avatar = {
+            public_id: result.public_id,
+            url: result.secure_url,
+          };
+        } else {
+          const result = await cloudinary.v2.uploader.upload(avatar, {
+            folder: "avatars",
+            width: 150,
+          });
+          user.avatar = {
+            public_id: result.public_id,
+            url: result.secure_url,
+          };
+        }
+      }
+
+      await user?.save();
+      await redis.set(userId, JSON.stringify(user));
+      res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler("Failed to update profile picture", 500));
     }
   },
 );
