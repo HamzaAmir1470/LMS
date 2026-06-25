@@ -248,6 +248,8 @@ export const updateAccessToken = CatchAsyncErrors(
         },
       );
 
+      req.user = user;
+
       res.cookie("access_token", accessToken, accessTokenOptions);
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
@@ -266,10 +268,7 @@ export const getUserInfo = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?._id?.toString() || "";
-
-      req.params.id = userId;
-
-      return getUserById(req, res, next);
+      return getUserById(userId, res);
     } catch (error) {
       return next(new ErrorHandler("Failed to get user info", 500));
     }
@@ -304,6 +303,87 @@ export const socialAuth = CatchAsyncErrors(
       }
     } catch (error) {
       return next(new ErrorHandler("Failed to authenticate user", 500));
+    }
+  },
+);
+
+// update user info
+interface IUpdateUserInfo {
+  name?: string;
+  email?: string;
+}
+export const updateUserInfo = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { name, email } = req.body as IUpdateUserInfo;
+      const userId = req.user?._id?.toString() || "";
+
+      const user = await userModel.findById(userId);
+
+      if (email && user) {
+        const isEmailExist = await userModel.findOne({ email });
+        if (isEmailExist && isEmailExist._id.toString() !== userId) {
+          return next(new ErrorHandler("Email already exists", 400));
+        }
+        user.email = email;
+      }
+
+      if (name && user) {
+        user.name = name;
+      }
+
+      await user?.save();
+
+      await redis.set(userId, JSON.stringify(user));
+
+      res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler("Failed to update user info", 500));
+    }
+  },
+);
+
+// update user password
+interface IUpdateUserPassword {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export const updateUserPassword = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { oldPassword, newPassword } = req.body as IUpdateUserPassword;
+      const user = await userModel.findById(req.user?._id).select("+password");
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      if (user?.password === undefined) {
+        return next(new ErrorHandler("User password is not set", 400));
+      }
+
+      const isPasswordMatched = await user.comparePassword(oldPassword);
+
+      if (!isPasswordMatched) {
+        return next(new ErrorHandler("Old password is incorrect", 400));
+      }
+
+      user.password = newPassword;
+
+      await user.save();
+
+      await redis.set(user._id.toString(), JSON.stringify(user));
+      
+      res.status(200).json({
+        success: true,
+        message: "Password updated successfully",
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler("Failed to update user password", 500));
     }
   },
 );
