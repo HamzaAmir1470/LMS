@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { IUser } from "../models/user.model.js";
 import { redis } from "./redis.js";
 import { CatchAsyncErrors } from "../middleware/catchAsyncErrors.js";
+import ErrorHandler from "./ErrorHandler.js";
 
 interface ITokenOptions {
   expires: Date;
@@ -11,9 +12,6 @@ interface ITokenOptions {
   httpOnly: boolean;
   sameSite: "lax" | "strict" | "none" | undefined;
   secure?: boolean;
-}
-export interface CustomRequest extends Request {
-  user?: IUser;
 }
 
 const accessTokenExpire = Number(process.env.ACCESS_TOKEN_EXPIRE) || 300;
@@ -55,7 +53,7 @@ export const sendToken = (user: IUser, statusCode: number, res: Response) => {
 
 // Logout user by clearing the cookies
 export const logoutUser = CatchAsyncErrors(
-  async (req: CustomRequest, res: Response) => {
+  async (req: Request, res: Response) => {
     res.clearCookie("access_token");
     res.clearCookie("refresh_token");
 
@@ -70,3 +68,18 @@ export const logoutUser = CatchAsyncErrors(
     });
   },
 );
+
+// validate user role
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: Request, res: Response, next: Function) => {
+    if (!req.user || !roles.includes(req.user.role || "")) {
+      return next(
+        new ErrorHandler(
+          `role: ${req.user?.role} is not allowed to access this resource`,
+          403,
+        ),
+      );
+    }
+    next();
+  };
+};
