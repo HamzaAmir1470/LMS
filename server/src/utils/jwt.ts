@@ -1,10 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { Response } from "express";
-import jwt from "jsonwebtoken";
-
+import { Request, Response } from "express";
 import { IUser } from "../models/user.model.js";
-import ErrorHandler from "./ErrorHandler.js";
 import { redis } from "./redis.js";
 import { CatchAsyncErrors } from "../middleware/catchAsyncErrors.js";
 
@@ -14,6 +11,9 @@ interface ITokenOptions {
   httpOnly: boolean;
   sameSite: "lax" | "strict" | "none" | undefined;
   secure?: boolean;
+}
+export interface CustomRequest extends Request {
+  user?: IUser;
 }
 
 const accessTokenExpire = Number(process.env.ACCESS_TOKEN_EXPIRE) || 300;
@@ -54,11 +54,19 @@ export const sendToken = (user: IUser, statusCode: number, res: Response) => {
 };
 
 // Logout user by clearing the cookies
-export const logoutUser = CatchAsyncErrors(async (req: Request, res: Response) => {
-  res.clearCookie("access_token");
-  res.clearCookie("refresh_token");
-  res.status(200).json({
-    success: true,
-    message: "Logged out successfully",
-  });
-});
+export const logoutUser = CatchAsyncErrors(
+  async (req: CustomRequest, res: Response) => {
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
+
+    const userId = req.user?._id?.toString() || "";
+    if (userId) {
+      await redis.del(userId);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  },
+);
