@@ -6,6 +6,7 @@ import ErrorMiddleware from "../src/middleware/error.js";
 import userRouter from "./routes/user.route.js";
 import courseRouter from "./routes/course.route.js";
 import OrderRouter from "./routes/order.route.js";
+import NotificationRouter from "./routes/notification.route.js";
 export const app = express();
 
 app.use(
@@ -19,7 +20,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 
 // Routes
-app.use("/api/v1", userRouter, courseRouter, OrderRouter);
+app.use("/api/v1", userRouter, courseRouter, OrderRouter, NotificationRouter);
 
 // Testing API
 app.get("/test", (req: Request, res: Response) => {
