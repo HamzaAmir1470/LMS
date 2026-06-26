@@ -3,13 +3,17 @@ import CourseModel from "../models/course.model.js";
 import { CatchAsyncErrors } from "../middleware/catchAsyncErrors.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
 import cloudinary from "cloudinary";
-import { createCourse } from "../services/course.service.js";
+import {
+  createCourse,
+  getAllCoursesService,
+} from "../services/course.service.js";
 import { redis } from "../utils/redis.js";
 import mongoose from "mongoose";
 import path from "node:path";
 import sendEmail from "../utils/sendMail.js";
 import * as ejs from "ejs";
 import NotificationModel from "../models/notification.model.js";
+import { getAllUsersService } from "../services/user.service.js";
 
 // upload course
 export const uploadCourse = CatchAsyncErrors(
@@ -272,7 +276,6 @@ export const addAnswer = CatchAsyncErrors(
           title: "New Answer",
           message: `${req.user?.name} has answered your question in the course ${courseContent?.title}`,
         });
-        
       } else {
         const data = {
           name: question.user.name,
@@ -400,6 +403,17 @@ export const addReplyToReview = CatchAsyncErrors(
         message: "Reply added successfully",
         course,
       });
+    } catch (error) {
+      return next(new ErrorHandler((error as Error).message, 500));
+    }
+  },
+);
+
+// get all courses (admin only)
+export const getAllCoursesAdmin = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllCoursesService(res);
     } catch (error) {
       return next(new ErrorHandler((error as Error).message, 500));
     }

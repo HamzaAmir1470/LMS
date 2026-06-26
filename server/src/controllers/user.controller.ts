@@ -12,7 +12,7 @@ import {
   sendToken,
 } from "../utils/jwt.js";
 import { redis } from "../utils/redis.js";
-import { getUserById } from "../services/user.service.js";
+import { getUserById, getAllUsersService } from "../services/user.service.js";
 import cloudinary from "cloudinary";
 
 interface IRegisterationBody {
@@ -431,6 +431,17 @@ export const updateProfilePicture = CatchAsyncErrors(
       });
     } catch (error) {
       return next(new ErrorHandler("Failed to update profile picture", 500));
+    }
+  },
+);
+
+// get all users (admin only)
+export const getAllUsers = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(res);
+    } catch (error) {
+      return next(new ErrorHandler("Failed to get all users", 500));
     }
   },
 );
