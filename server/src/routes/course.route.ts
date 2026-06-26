@@ -9,6 +9,7 @@ import {
   getCourseByUser,
   getSingleCourse,
   uploadCourse,
+  deleteCourse,
 } from "../controllers/course.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
 import { authorizeRoles } from "../controllers/user.controller.js";
@@ -44,5 +45,12 @@ courseRouter.get(
   authorizeRoles("admin"),
   getAllCourses,
 );
+courseRouter.delete(
+  "/delete-course/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  deleteCourse,
+);
+
 
 export default courseRouter;

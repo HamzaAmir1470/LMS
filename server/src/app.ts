@@ -7,6 +7,7 @@ import userRouter from "./routes/user.route.js";
 import courseRouter from "./routes/course.route.js";
 import OrderRouter from "./routes/order.route.js";
 import NotificationRouter from "./routes/notification.route.js";
+import analyticsRouter from "./routes/analytics.route.js";
 export const app = express();
 
 app.use(
@@ -20,7 +21,14 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 
 // Routes
-app.use("/api/v1", userRouter, courseRouter, OrderRouter, NotificationRouter);
+app.use(
+  "/api/v1",
+  userRouter,
+  courseRouter,
+  OrderRouter,
+  NotificationRouter,
+  analyticsRouter,
+);
 
 // Testing API
 app.get("/test", (req: Request, res: Response) => {
