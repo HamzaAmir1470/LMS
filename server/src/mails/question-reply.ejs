@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>New Reply Notification</title>
+    <style>
+        /* Reset styles for email clients */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7fb;
+            line-height: 1.6;
+            color: #1a2332;
+            padding: 20px;
+        }
+        
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .email-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .logo {
+            display: inline-block;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-right: 8px;
+        }
+        
+        .logo span {
+            font-weight: 300;
+        }
+        
+        .header-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        /* Content */
+        .email-body {
+            padding: 40px 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a2332;
+            margin-bottom: 6px;
+        }
+        
+        .greeting-highlight {
+            color: #667eea;
+        }
+        
+        .sub-greeting {
+            color: #6b7a8f;
+            font-size: 15px;
+            margin-bottom: 24px;
+            border-left: 3px solid #667eea;
+            padding-left: 16px;
+            background: #f8f9ff;
+            padding: 12px 16px;
+            border-radius: 6px;
+        }
+        
+        .notification-box {
+            background: #f8faff;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0 28px;
+            border: 1px solid #e8edf5;
+        }
+        
+        .notification-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a2332;
+            margin: 8px 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .video-title .play-icon {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .video-meta {
+            color: #6b7a8f;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .reply-preview {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-top: 16px;
+            border-left: 4px solid #f093fb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .reply-preview .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7a8f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        
+        .reply-preview .content {
+            color: #1a2332;
+            font-size: 15px;
+            font-style: italic;
+        }
+        
+        .message-text {
+            color: #2d3748;
+            font-size: 16px;
+            margin: 20px 0;
+            line-height: 1.7;
+        }
+        
+        .cta-container {
+            text-align: center;
+            margin: 30px 0 20px;
+        }
+        
+        .btn-primary {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            display: inline-block;
+            color: #667eea !important;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            text-decoration: underline;
+        }
+        
+        .divider {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 28px 0 24px;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 0 40px 32px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            color: #6b7a8f;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .footer-text strong {
+            color: #1a2332;
+        }
+        
+        .social-links {
+            margin: 16px 0 18px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: inline-block;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f1f4f9;
+            color: #4a5568;
+            text-decoration: none;
+            text-align: center;
+            line-height: 38px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .social-link:hover {
+            background: #667eea;
+            color: #ffffff;
+        }
+        
+        .footer-divider {
+            border: 0;
+            height: 1px;
+            background: #e8edf5;
+            margin: 20px 0;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        
+        .footer-links a {
+            color: #6b7a8f;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        
+        .footer-links a:hover {
+            color: #667eea;
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            color: #8a9aa8;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .email-body {
+                padding: 24px 20px 20px;
+            }
+            
+            .footer {
+                padding: 0 20px 24px;
+            }
+            
+            .email-header {
+                padding: 24px 20px;
+            }
+            
+            .greeting {
+                font-size: 19px;
+            }
+            
+            .video-title {
+                font-size: 16px;
+            }
+            
+            .btn-primary {
+                padding: 12px 28px;
+                font-size: 15px;
+                width: 100%;
+            }
+            
+            .notification-box {
+                padding: 16px;
+            }
+            
+            .footer-links {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Email Wrapper -->
+    <div class="email-wrapper">
+        
+        <!-- Header -->
+        <div class="email-header">
+            <a href="#" class="logo">
+                <span class="logo-icon">▶</span>
+                Learn<span>Hub</span>
+            </a>
+            <div class="header-badge">New Reply Notification</div>
+        </div>
+        
+        <!-- Body -->
+        <div class="email-body">
+            
+            <!-- Greeting -->
+            <h1 class="greeting">
+                Hello <span class="greeting-highlight"><%= name %></span> 👋
+            </h1>
+            
+            <div class="sub-greeting">
+                A new reply has been added to your question
+            </div>
+            
+            <!-- Notification Details -->
+            <div class="notification-box">
+                <span class="notification-label">📬 New Reply</span>
+                
+                <div class="video-title">
+                    <span class="play-icon">▶</span>
+                    "<%= title %>"
+                </div>
+                
+                <div class="video-meta">
+                    🎬 Video Discussion • <span id="timestamp"><%= new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %></span>
+                </div>
+                
+                <!-- Optional: Reply Preview -->
+                <% if (replyPreview) { %>
+                <div class="reply-preview">
+                    <span class="label">💬 Reply Preview</span>
+                    <div class="content">"<%= replyPreview %>"</div>
+                </div>
+                <% } %>
+            </div>
+            
+            <!-- Main Message -->
+            <p class="message-text">
+                <strong>Please login to our website</strong> to view the full reply and continue the discussion. 
+                Don't miss out on the conversation — your insights and questions help our community grow!
+            </p>
+            
+            <!-- Call to Action -->
+            <div class="cta-container">
+                <a href="<%= actionLink || '#' %>" class="btn-primary">
+                    View Reply →
+                </a>
+                <br>
+                <a href="<%= websiteUrl || '#' %>" class="btn-secondary">
+                    Visit LearnHub
+                </a>
+            </div>
+            
+            <hr class="divider">
+            
+            <!-- Community Message -->
+            <p style="color: #2d3748; font-size: 15px; text-align: center;">
+                🌟 Thank you for being a part of our community!
+            </p>
+            <p style="color: #6b7a8f; font-size: 14px; text-align: center; margin-top: 4px;">
+                Your engagement makes this platform better for everyone.
+            </p>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            
+            <div class="social-links">
+                <a href="#" class="social-link">📘</a>
+                <a href="#" class="social-link">🐦</a>
+                <a href="#" class="social-link">📺</a>
+                <a href="#" class="social-link">💼</a>
+            </div>
+            
+            <div class="footer-text">
+                <strong>LearnHub</strong> — Empowering learners worldwide
+            </div>
+            
+            <hr class="footer-divider">
+            
+            <div class="footer-links">
+                <a href="#">Help Center</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Unsubscribe</a>
+            </div>
+            
+            <div class="copyright">
+                &copy; <%= new Date().getFullYear() %> LearnHub. All rights reserved.
+                <br>
+                <span style="font-size: 12px; color: #a0aec0;">
+                    123 Learning Ave, Suite 200, San Francisco, CA 94105
+                </span>
+            </div>
+            
+        </div>
+        
+    </div>
+</body>
+</html>

@@ -1,9 +1,10 @@
 import mongoose, { Model, Schema, Document } from "mongoose";
+import { IUser } from "./user.model.js";
 
 interface IComment extends Document {
-  user: object;
-  comment: string;
-  commentReplies: IComment[];
+  user: IUser;
+  question: string;
+  questionReplies: IComment[];
 }
 
 interface IReview extends Document {
@@ -78,10 +79,10 @@ const commentSchema = new Schema<IComment>({
   user: {
     type: Object,
   },
-  comment: {
+  question: {
     type: String,
   },
-  commentReplies: [
+  questionReplies: [
     {
       type: Object,
     },

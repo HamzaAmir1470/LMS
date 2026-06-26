@@ -5,6 +5,10 @@ import ErrorHandler from "../utils/ErrorHandler.js";
 import cloudinary from "cloudinary";
 import { createCourse } from "../services/course.service.js";
 import { redis } from "../utils/redis.js";
+import mongoose from "mongoose";
+import path from "node:path";
+import sendEmail from "../utils/sendMail.js";
+import * as ejs from "ejs";
 
 // upload course
 export const uploadCourse = CatchAsyncErrors(
@@ -120,6 +124,167 @@ export const getAllCourses = CatchAsyncErrors(
           courses,
         });
       }
+    } catch (error) {
+      return next(new ErrorHandler((error as Error).message, 500));
+    }
+  },
+);
+
+// get course content --valid user
+export const getCourseByUser = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userCourseList = req.user?.courses;
+      const courseId = req.params.id;
+
+      const courseExists = userCourseList?.find(
+        (course: any) => course._id.toString() === courseId,
+      );
+
+      if (!courseExists) {
+        return next(
+          new ErrorHandler("You are not enrolled in this course", 403),
+        );
+      }
+
+      const course = await CourseModel.findById(courseId);
+
+      const content = course?.courseData;
+
+      res.status(200).json({
+        success: true,
+        content,
+      });
+    } catch (error) {
+      return next(new ErrorHandler((error as Error).message, 500));
+    }
+  },
+);
+
+// add question in the course
+interface IAddQuestionData {
+  question: string;
+  courseId: string;
+  contentId: string;
+}
+
+export const addQuestion = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { question, courseId, contentId }: IAddQuestionData = req.body;
+
+      const course = await CourseModel.findById(courseId);
+
+      if (!mongoose.Types.ObjectId.isValid(contentId)) {
+        return next(new ErrorHandler("Invalid content ID", 400));
+      }
+
+      const courseContent = course?.courseData.find((item: any) =>
+        item._id.equals(contentId),
+      );
+
+      if (!courseContent) {
+        return next(new ErrorHandler("Content not found", 404));
+      }
+      if (!req.user) {
+        return next(new ErrorHandler("Please login", 401));
+      }
+      // create a new question object
+      const newQuestion: any = {
+        user: req.user,
+        question,
+        questionReplies: [],
+      };
+
+      // add the new question to the course content's questions array
+      courseContent.questions.push(newQuestion);
+
+      // save the updated course document
+      await course?.save();
+
+      res.status(200).json({
+        success: true,
+        course,
+      });
+    } catch (error) {
+      return next(new ErrorHandler((error as Error).message, 500));
+    }
+  },
+);
+
+// add answering question in the course
+interface IAddAnswerData {
+  answer: string;
+  courseId: string;
+  contentId: string;
+  questionId: string;
+}
+
+export const addAnswer = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { answer, courseId, contentId, questionId }: IAddAnswerData =
+        req.body;
+
+      const course = await CourseModel.findById(courseId);
+      if (!mongoose.Types.ObjectId.isValid(contentId)) {
+        return next(new ErrorHandler("Invalid content ID", 400));
+      }
+
+      const courseContent = course?.courseData.find((item: any) =>
+        item._id.equals(contentId),
+      );
+
+      if (!courseContent) {
+        return next(new ErrorHandler("Content not found", 404));
+      }
+      const question = courseContent?.questions?.find((q: any) =>
+        q._id.equals(questionId),
+      );
+
+      if (!question) {
+        return next(new ErrorHandler("Question not found", 404));
+      }
+
+      // create a new answer object
+      const newAnswer: any = {
+        user: req.user,
+        answer,
+      };
+
+      // add the new answer to the question's questionReplies array
+      question.questionReplies.push(newAnswer);
+
+      // save the updated course document
+      await course?.save();
+
+      if (req.user?._id === question.user._id) {
+        // create a notification
+      } else {
+        const data = {
+          name: question.user.name,
+          title: courseContent.title,
+        };
+        const html = await ejs.renderFile(
+          path.join(__dirname, "../mails/question-reply.ejs"),
+          data,
+        );
+        try {
+          await sendEmail({
+            email: question.user.email,
+            subject: "New reply to your question",
+            template: "question-reply.ejs",
+            data,
+          });
+        } catch (error) {
+          return next(new ErrorHandler((error as Error).message, 500));
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        course,
+      });
     } catch (error) {
       return next(new ErrorHandler((error as Error).message, 500));
     }
