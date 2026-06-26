@@ -12,6 +12,7 @@ import {
   updateProfilePicture,
   updateUserInfo,
   updateUserPassword,
+  updateUserRole,
 } from "../controllers/user.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
 
@@ -42,6 +43,12 @@ userRouter.get(
   isAuthenticated,
   authorizeRoles("admin"),
   getAllUsers,
+);
+userRouter.put(
+  "/update-user",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  updateUserRole,
 );
 
 export default userRouter;

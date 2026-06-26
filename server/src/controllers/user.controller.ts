@@ -12,7 +12,11 @@ import {
   sendToken,
 } from "../utils/jwt.js";
 import { redis } from "../utils/redis.js";
-import { getUserById, getAllUsersService } from "../services/user.service.js";
+import {
+  getUserById,
+  getAllUsersService,
+  updateUserRoleService,
+} from "../services/user.service.js";
 import cloudinary from "cloudinary";
 
 interface IRegisterationBody {
@@ -442,6 +446,18 @@ export const getAllUsers = CatchAsyncErrors(
       getAllUsersService(res);
     } catch (error) {
       return next(new ErrorHandler("Failed to get all users", 500));
+    }
+  },
+);
+
+// update user role (admin only)
+export const updateUserRole = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, role } = req.body;
+      updateUserRoleService(id, role, res);
+    } catch (error) {
+      return next(new ErrorHandler("Failed to update user role", 500));
     }
   },
 );
