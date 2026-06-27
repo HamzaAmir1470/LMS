@@ -3,7 +3,7 @@ import {
   getNotifications,
   updateNotification,
 } from "../controllers/notification.controller.js";
-import { authorizeRoles } from "../controllers/user.controller.js";
+import { authorizeRoles } from "../middleware/auth.js";
 import { isAuthenticated } from "../middleware/auth.js";
 
 const NotificationRouter = express.Router();

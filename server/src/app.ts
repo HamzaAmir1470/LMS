@@ -7,6 +7,7 @@ import userRouter from "./routes/user.route.js";
 import courseRouter from "./routes/course.route.js";
 import OrderRouter from "./routes/order.route.js";
 import NotificationRouter from "./routes/notification.route.js";
+import layoutRouter from "./routes/layout.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 export const app = express();
 
@@ -28,6 +29,7 @@ app.use(
   OrderRouter,
   NotificationRouter,
   analyticsRouter,
+  layoutRouter,
 );
 
 // Testing API

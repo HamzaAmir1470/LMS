@@ -12,7 +12,7 @@ import {
   deleteCourse,
 } from "../controllers/course.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
-import { authorizeRoles } from "../controllers/user.controller.js";
+import { authorizeRoles } from "../middleware/auth.js";
 const courseRouter = express.Router();
 
 courseRouter.post(

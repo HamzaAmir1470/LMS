@@ -1,7 +1,6 @@
 import express from "express";
 import {
   activateUser,
-  authorizeRoles,
   deleteUser,
   getAllUsers,
   getUserInfo,
@@ -15,6 +14,7 @@ import {
   updateUserPassword,
   updateUserRole,
 } from "../controllers/user.controller.js";
+import { authorizeRoles } from "../middleware/auth.js";
 import { isAuthenticated } from "../middleware/auth.js";
 
 const userRouter = express.Router();

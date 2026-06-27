@@ -5,7 +5,7 @@ import {
   getOrdersAnalytics,
 } from "../controllers/analytics.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
-import { authorizeRoles } from "../controllers/user.controller.js";
+import { authorizeRoles } from "../middleware/auth.js";
 
 const analyticsRouter = express.Router();
 
