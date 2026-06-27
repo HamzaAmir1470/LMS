@@ -192,8 +192,6 @@ export const logoutUser = CatchAsyncErrors(
   },
 );
 
-
-
 // update access token
 export const updateAccessToken = CatchAsyncErrors(
   async (req: Request, res: Response, next: Function) => {
@@ -244,6 +242,8 @@ export const updateAccessToken = CatchAsyncErrors(
 
       res.cookie("access_token", accessToken, accessTokenOptions);
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+      await redis.set(user._id.toString(), JSON.stringify(user), "EX", 604800); // 7 days in seconds
 
       res.status(200).json({
         success: true,
