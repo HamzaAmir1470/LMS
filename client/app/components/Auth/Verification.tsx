@@ -1,6 +1,10 @@
 import { styles } from "@/app/styles/style";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { VscWorkspaceTrusted } from "react-icons/vsc";
+import { useSelector } from "react-redux";
+import { useActivationMutation } from "@/redux/features/auth/authApi";
+import type { RootState } from "@/redux/store";
+import { toast } from "react-hot-toast";
 
 type Props = {
   setRoute: (route: string) => void;
@@ -14,6 +18,8 @@ type VerifyNumber = {
 };
 
 const Verification: React.FC<Props> = ({ setRoute }) => {
+  const { token } = useSelector((state: RootState) => state.auth);
+  const [activation, { isSuccess, error }] = useActivationMutation();
   const [invalidError, setInvalidError] = React.useState(false);
   const [verifyNumber, setVerifyNumber] = React.useState<VerifyNumber>({
     "0": "",
@@ -22,6 +28,24 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
     "3": "",
   });
 
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Account activated successfully");
+      setRoute("Login");
+    }
+    if (error) {
+      if ("data" in error) {
+        const errorData = error as any;
+        toast.error("Invalid OTP", errorData.data.message);
+        if (!invalidError) {
+          setInvalidError(true);
+        }
+      } else {
+        console.log("An unexpected error occurred:", error);
+      }
+    }
+  }, [isSuccess, error, setRoute]);
+
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -29,8 +53,18 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
     useRef<HTMLInputElement>(null),
   ];
 
-    const verificationHandler = async () => {
+  const verificationHandler = async () => {
+    const verificationNumber = Object.values(verifyNumber).join("");
+    if (verificationNumber.length !== 4) {
       setInvalidError(true);
+      return;
+    }
+
+    await activation({
+      activation_token: token,
+      activation_code: verificationNumber,
+    });
+  
   };
 
   const handleInputChange = (index: number, value: string) => {
@@ -89,8 +123,8 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
           className="text-[#2190ff] pl-1 cursor-pointer hover:underline"
           onClick={() => setRoute("SignUp")}
         >
-          Change Email / 
-              </span>
+          Change Email /
+        </span>
         <span
           className="text-black dark:text-white pl-1 cursor-pointer hover:underline"
           onClick={() => setRoute("Login")}

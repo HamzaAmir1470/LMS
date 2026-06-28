@@ -1,8 +1,11 @@
+// "use client";
+
 import { Geist, Geist_Mono, Poppins, Josefin_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./utils/theme-provider";
 import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
+import { Providers } from "./Provider";
 
 export const metadata: Metadata = {
   title: "E-Learning",
@@ -61,15 +64,17 @@ export default function RootLayout({
           duration-300
         `}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster position="top-center" reverseOrder={false} />
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster position="top-center" reverseOrder={false} />
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -18,7 +18,10 @@ import {
   updateUserRoleService,
 } from "../services/user.service.js";
 import cloudinary from "cloudinary";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 interface IRegisterationBody {
   name: string;
   email: string;
@@ -37,39 +40,33 @@ export const registerationUser = CatchAsyncErrors(
         return next(new ErrorHandler("Email already exists", 400));
       }
 
-      const user: any = await userModel.create({
+      // DO NOT save user yet
+      const user = {
         name,
         email,
         password,
-      });
+      };
 
       const activationToken = createActivationToken(user);
       const activationCode = activationToken.activationCode;
-      const data = { user: { name: user.name }, activationCode };
-      const html = await ejs.renderFile(
-        path.join(__dirname, "../mails/activation-mail.ejs"),
+
+      const data = {
+        user: {
+          name: user.name,
+        },
+        activationCode,
+      };
+
+      await sendEmail({
+        email: user.email,
+        subject: "Activate your account",
+        template: "activation-mail", // no .ejs here
         data,
-      );
+      });
 
-      try {
-        await sendEmail({
-          email: user.email,
-          subject: "Activate your account",
-          template: "activation-mail.ejs",
-          data,
-        });
-
-        res.status(201).json({
-          success: true,
-          message: "Activation email sent successfully!",
-        });
-      } catch (error) {
-        return next(new ErrorHandler("Failed to send activation email", 500));
-      }
-
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
-        user,
+        message: "Activation email sent successfully!",
         activationToken: activationToken.token,
       });
     } catch (error: any) {
@@ -82,8 +79,12 @@ interface IActivationToken {
   token: string;
   activationCode: string;
 }
-export const createActivationToken = (user: any): IActivationToken => {
+
+export const createActivationToken = (
+  user: IRegisterationBody,
+): IActivationToken => {
   const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
+
   const token = jwt.sign(
     {
       user,
@@ -94,7 +95,11 @@ export const createActivationToken = (user: any): IActivationToken => {
       expiresIn: "5m",
     },
   );
-  return { token, activationCode };
+
+  return {
+    token,
+    activationCode,
+  };
 };
 
 // activate USer
@@ -102,24 +107,29 @@ interface IActivationRequest {
   activation_token: string;
   activation_code: string;
 }
+
 export const activateUser = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { activation_token, activation_code }: IActivationRequest =
-        req.body as IActivationRequest;
+        req.body;
 
-      const newUser: { user: IUser; activationCode: string } = jwt.verify(
+      const decoded = jwt.verify(
         activation_token,
         process.env.ACTIVATION_SECRET as Secret,
-      ) as { user: IUser; activationCode: string };
+      ) as {
+        user: IRegisterationBody;
+        activationCode: string;
+      };
 
-      if (newUser.activationCode !== activation_code) {
+      if (decoded.activationCode !== activation_code) {
         return next(new ErrorHandler("Invalid activation code", 400));
       }
 
-      const { name, email, password } = newUser.user;
+      const { name, email, password } = decoded.user;
 
       const existUser = await userModel.findOne({ email });
+
       if (existUser) {
         return next(new ErrorHandler("User already exists", 400));
       }
@@ -130,7 +140,7 @@ export const activateUser = CatchAsyncErrors(
         password,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         user,
       });
