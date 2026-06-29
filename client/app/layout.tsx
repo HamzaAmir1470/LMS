@@ -1,10 +1,6 @@
-// "use client";
-
 import { Geist, Geist_Mono, Poppins, Josefin_Sans } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./utils/theme-provider";
 import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
 import { Providers } from "./Provider";
 
 export const metadata: Metadata = {
@@ -14,7 +10,6 @@ export const metadata: Metadata = {
   keywords: ["Programming", "MERN", "Redux", "Machine Learning"],
 };
 
-// Configured to match the exact casing of your Tailwind setup
 const poppins = Poppins({
   variable: "--font-Poppins",
   subsets: ["latin"],
@@ -46,35 +41,25 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning /* Prevents flash warnings from next-themes hydration */
+      suppressHydrationWarning
     >
       <body
         className={`
-          ${poppins.variable} 
-          ${josefinSans.variable} 
-          min-h-full 
-          flex 
-          flex-col 
+          ${poppins.variable}
+          ${josefinSans.variable}
+          min-h-full
+          flex
+          flex-col
           bg-white
           bg-no-repeat
-          dark:bg-gradient-to-b 
-          dark:from-gray-900 
-          dark:to-black 
-          transition-colors 
+          dark:bg-gradient-to-b
+          dark:from-gray-900
+          dark:to-black
+          transition-colors
           duration-300
         `}
       >
-        <Providers>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster position="top-center" reverseOrder={false} />
-          </ThemeProvider>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

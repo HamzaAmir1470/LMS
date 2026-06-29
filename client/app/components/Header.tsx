@@ -9,6 +9,12 @@ import CustomModel from "../utils/CustomModel";
 import Login from "../components/Auth/Login";
 import SignUp from "../components/Auth/SignUp";
 import Verification from "../components/Auth/Verification";
+import { useSelector } from "react-redux";
+import Image from "next/image";
+import defaultAvatar from "../../public/assets/default-avatar.png";
+import { useSession } from "next-auth/react";
+import { useSocialAuthMutation } from "../../redux/features/auth/authApi";
+import toast from "react-hot-toast";
 
 type Props = {
   open: boolean;
@@ -21,6 +27,25 @@ type Props = {
 const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   const [active, setActive] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
+  const { user } = useSelector((state: any) => state.auth);
+  const { data } = useSession();
+  const [socialAuth, { isSuccess }] = useSocialAuthMutation();
+
+  useEffect(() => {
+    if (!user && data) {
+      socialAuth({
+        email: data.user?.email,
+        name: data.user?.name,
+        avatar: data.user?.image,
+      });
+    }
+  }, [user, data, socialAuth]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Login successful!");
+    }
+  }, [isSuccess]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,6 +59,7 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
     };
   }, []);
 
+  
   return (
     <>
       <div className="w-full relative">
@@ -67,15 +93,30 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                   />
                 </div>
 
-                {/* Desktop User Action */}
-                <HiOutlineUserCircle
-                  size={25}
-                  className="hidden 800px:block cursor-pointer text-black dark:text-white ml-4"
-                  onClick={() => {
-                    setOpen(true);
-                    setRoute("Login"); // Opens up Login form by default
-                  }}
-                />
+                {user ? (
+                  <Link href="/profile" className="flex items-center">
+                    <Image
+                      src={
+                        user?.avatar?.url?.trim()
+                          ? user.avatar.url
+                          : defaultAvatar
+                      }
+                      alt="User Avatar"
+                      width={30}
+                      height={30}
+                      className="rounded-full ml-4"
+                    />
+                  </Link>
+                ) : (
+                  <HiOutlineUserCircle
+                    size={25}
+                    className="hidden 800px:block cursor-pointer text-black dark:text-white ml-4"
+                    onClick={() => {
+                      setOpen(true);
+                      setRoute("Login"); // Opens up Login form by default
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -107,8 +148,12 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                     className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   >
                     <HiOutlineUserCircle
-                      size={30}
-                      className="text-black dark:text-white"
+                      size={25}
+                      className="hidden 800px:block cursor-pointer text-black dark:text-white ml-4"
+                      onClick={() => {
+                        setOpen(true);
+                        setRoute("Login");
+                      }}
                     />
                   </button>
                 </div>
@@ -124,15 +169,24 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
         </div>
 
         {/* Unified CustomModel Wrapper */}
-        {open && (route === "Login" || route === "SignUp" || route === "Verification") && (
-          <CustomModel
-            open={open}
-            setOpen={setOpen}
-            activeItem={activeItem}
-            component={route === "Login" ? Login : route === "SignUp" ? SignUp : Verification}
-            setRoute={setRoute}
-          />
-        )}
+        {open &&
+          (route === "Login" ||
+            route === "SignUp" ||
+            route === "Verification") && (
+            <CustomModel
+              open={open}
+              setOpen={setOpen}
+              activeItem={activeItem}
+              component={
+                route === "Login"
+                  ? Login
+                  : route === "SignUp"
+                    ? SignUp
+                    : Verification
+              }
+              setRoute={setRoute}
+            />
+          )}
       </div>
     </>
   );

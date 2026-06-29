@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { type Request, type Response } from "express";
+import express, { NextFunction, type Request, type Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import ErrorMiddleware from "../src/middleware/error.js";
@@ -9,6 +9,7 @@ import OrderRouter from "./routes/order.route.js";
 import NotificationRouter from "./routes/notification.route.js";
 import layoutRouter from "./routes/layout.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
+import ErrorHandler from "./utils/ErrorHandler.js";
 export const app = express();
 
 app.use(
@@ -39,9 +40,9 @@ app.get("/test", (req: Request, res: Response) => {
 });
 
 // Unknown route handler
-app.use((req: Request, res: Response) => {
-  const error = new Error(`Route ${req.originalUrl} not found`) as any;
-  res.status(error.statusCode).json({ message: error.message });
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next(new ErrorHandler(`Route ${req.originalUrl} not found`, 404));
 });
 
 app.use(ErrorMiddleware);

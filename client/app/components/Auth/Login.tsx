@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -10,9 +10,13 @@ import {
 } from "react-icons/ai";
 import { styles } from "../../styles/style";
 import { FaGoogle } from "react-icons/fa6";
+import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { toast } from "react-hot-toast";
+import { signIn } from "next-auth/react";
 
 type Props = {
   setRoute: (route: string) => void;
+  setOpen: (open: boolean) => void;
 };
 
 const schema = Yup.object().shape({
@@ -22,9 +26,9 @@ const schema = Yup.object().shape({
     .required("Password is required!"),
 });
 
-const Login: FC<Props> = ({ setRoute }) => {
+const Login: FC<Props> = ({ setRoute, setOpen }) => {
   const [show, setShow] = useState(false);
-
+  const [login, { isSuccess, error }] = useLoginMutation();
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -32,10 +36,23 @@ const Login: FC<Props> = ({ setRoute }) => {
     },
     validationSchema: schema,
     onSubmit: async ({ email, password }) => {
-      // Handle login logic here
-      console.log("Login submitted:", email, password);
+      await login({ email, password });
     },
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Login successfully!");
+      setOpen(false);
+    }
+
+    if (error) {
+      if ("data" in error) {
+        const errorData = error as any;
+        toast.error(errorData.data.message || "Login failed!");
+      }
+    }
+  }, [isSuccess, error, setOpen]);
 
   const { errors, touched, handleChange, handleSubmit, values, handleBlur } =
     formik;
@@ -107,10 +124,12 @@ const Login: FC<Props> = ({ setRoute }) => {
           <FaGoogle
             size={20}
             className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition"
+            onClick={() => signIn("google")}
           />
           <AiFillGithub
             size={24}
             className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition"
+            onClick={() => signIn("github")}
           />
         </div>
 
