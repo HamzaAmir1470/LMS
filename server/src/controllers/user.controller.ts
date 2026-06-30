@@ -17,11 +17,8 @@ import {
   getAllUsersService,
   updateUserRoleService,
 } from "../services/user.service.js";
-import cloudinary from "cloudinary";
-import { fileURLToPath } from "url";
+import cloudinary from "../utils/cloudinary.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 interface IRegisterationBody {
   name: string;
   email: string;
