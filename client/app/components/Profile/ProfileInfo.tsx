@@ -13,30 +13,45 @@ type Props = {
 
 const ProfileInfo: FC<Props> = ({ avatar, user }) => {
   const [name, setName] = useState((user && user?.name) || "");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
   const [updateAvatar, { isSuccess, error }] = useUpdateAvatarMutation();
-  const [loadUser, setLoadUser] = useState(false);
-  const {} = useLoadUserQuery(undefined, { 
-    skip: loadUser ? false : true,
+
+  // Destructure refetch directly from the hook
+  const { refetch } = useLoadUserQuery(undefined, {
+    refetchOnMountOrArgChange: true,
   });
-  const imageHandler = async (e: any) => {
+
+  const imageHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     const fileReader = new FileReader();
+
     fileReader.onload = async () => {
       if (fileReader.readyState === 2) {
-        const avatar = fileReader.result;
-        await updateAvatar({avatar});
+        const base64Image = fileReader.result as string;
+
+        // 1. Set instant local preview
+        setAvatarPreview(base64Image);
+
+        // 2. Upload to backend
+        await updateAvatar({ avatar: base64Image });
       }
     };
-    fileReader.readAsDataURL(e.target.files![0]);
+
+    fileReader.readAsDataURL(file);
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setLoadUser(true);
+      // 3. Trigger RTK Query refetch to get updated user data from server
+      refetch();
     }
     if (error) {
-      console.log("Error updating avatar:", error);
+      console.error("Error updating avatar:", error);
     }
-  }, [isSuccess]);
+  }, [isSuccess, error, refetch]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,7 +65,8 @@ const ProfileInfo: FC<Props> = ({ avatar, user }) => {
       <div className="w-full flex justify-center">
         <div className="relative">
           <Image
-            src={user?.avatar?.url || avatar || avatarIcon}
+            // Priority order: 1. Local preview -> 2. Freshly fetched server avatar -> 3. Prop avatar -> 4. Default fallback
+            src={avatarPreview || user?.avatar?.url || avatar || avatarIcon}
             alt="avatar"
             width={120}
             height={120}
