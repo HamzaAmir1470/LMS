@@ -402,8 +402,8 @@ export const updateProfilePicture = CatchAsyncErrors(
 
       if (avatar && user) {
         if (user?.avatar?.public_id) {
-          await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
-          const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+          await cloudinary.uploader.destroy(user?.avatar?.public_id);
+          const myCloud = await cloudinary.uploader.upload(avatar, {
             folder: "avatars",
             width: 150,
           });
@@ -412,7 +412,7 @@ export const updateProfilePicture = CatchAsyncErrors(
             url: myCloud.secure_url,
           };
         } else {
-          const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+          const myCloud = await cloudinary.uploader.upload(avatar, {
             folder: "avatars",
             width: 150,
           });
