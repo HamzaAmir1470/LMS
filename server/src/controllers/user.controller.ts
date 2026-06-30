@@ -397,41 +397,44 @@ interface IUpdateProfilePicture {
 export const updateProfilePicture = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { avatar } = req.body as IUpdateProfilePicture;
-      const userId = req.user?._id?.toString() || "";
+      const { avatar } = req.body;
+
+      const userId = req?.user?._id;
+
       const user = await userModel.findById(userId);
 
       if (avatar && user) {
         if (user?.avatar?.public_id) {
-          await cloudinary.v2.uploader.destroy(user.avatar.public_id);
-          const result = await cloudinary.v2.uploader.upload(avatar, {
+          await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+          const myCloud = await cloudinary.v2.uploader.upload(avatar, {
             folder: "avatars",
             width: 150,
           });
           user.avatar = {
-            public_id: result.public_id,
-            url: result.secure_url,
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url,
           };
         } else {
-          const result = await cloudinary.v2.uploader.upload(avatar, {
+          const myCloud = await cloudinary.v2.uploader.upload(avatar, {
             folder: "avatars",
             width: 150,
           });
           user.avatar = {
-            public_id: result.public_id,
-            url: result.secure_url,
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url,
           };
         }
       }
 
       await user?.save();
-      await redis.set(userId, JSON.stringify(user));
+      await redis.set(userId?.toString() || "", JSON.stringify(user));
+
       res.status(200).json({
         success: true,
         user,
       });
-    } catch (error) {
-      return next(new ErrorHandler("Failed to update profile picture", 500));
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
     }
   },
 );

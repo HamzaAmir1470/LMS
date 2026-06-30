@@ -12,8 +12,11 @@ import Verification from "../components/Auth/Verification";
 import { useSelector } from "react-redux";
 import Image from "next/image";
 import defaultAvatar from "../../public/assets/default-avatar.png";
-import { useSession } from "next-auth/react";
-import { useSocialAuthMutation } from "../../redux/features/auth/authApi";
+import { signOut, useSession } from "next-auth/react";
+import {
+  useLogoutQuery,
+  useSocialAuthMutation,
+} from "../../redux/features/auth/authApi";
 import toast from "react-hot-toast";
 
 type Props = {
@@ -30,7 +33,15 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   const { user } = useSelector((state: any) => state.auth);
   const { data } = useSession();
   const [socialAuth, { isSuccess }] = useSocialAuthMutation();
+  const [logOut, setLogOut] = useState(false);
+  const {} = useLogoutQuery(undefined, {
+    skip: !logOut ? true : false,
+  });
 
+  const logOutHandler = async () => {
+    setLogOut(true);
+    await signOut();
+  };
   useEffect(() => {
     if (!user && data) {
       socialAuth({
@@ -42,10 +53,14 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   }, [user, data, socialAuth]);
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success("Login successful!");
+    if (!isSuccess) return;
+
+    toast.success("Login successful!");
+
+    if (data === null && !logOut) {
+      setLogOut(true);
     }
-  }, [isSuccess]);
+  }, [data, isSuccess, logOut]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,7 +74,6 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
     };
   }, []);
 
-  
   return (
     <>
       <div className="w-full relative">
