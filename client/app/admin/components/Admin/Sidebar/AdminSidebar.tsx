@@ -148,7 +148,7 @@ const AdminSidebar = () => {
               >
                 <Link href="/">
                   <h3 className="text-[25px] font-Poppins uppercase dark:text-white text-black">
-                    ELearning
+                    E-Learning
                   </h3>
                 </Link>
                 <IconButton
@@ -195,7 +195,7 @@ const AdminSidebar = () => {
                   variant="h6"
                   sx={{ m: "10px 0 0 0" }}
                   className="!text-[20px] text-black
-                 dark:text-[#ffffffc1]"
+                 dark:text-[#ffffffc1] capitalize!"
                 >
                   - {user?.role}
                 </Typography>
