@@ -3,8 +3,9 @@ import Image from "next/image";
 import { styles } from "../../../app/styles/style";
 import { AiOutlineCamera } from "react-icons/ai";
 import avatarIcon from "../../../public/assets/default-avatar.png";
-import { useUpdateAvatarMutation } from "@/redux/features/user/userApi";
+import { useEditProfileMutation, useUpdateAvatarMutation } from "@/redux/features/user/userApi";
 import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
+import { toast } from "react-hot-toast";
 
 type Props = {
   avatar: string | null;
@@ -14,6 +15,7 @@ type Props = {
 const ProfileInfo: FC<Props> = ({ avatar, user }) => {
   const [name, setName] = useState((user && user?.name) || "");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [editProfile, { isSuccess: success, error: updateError }] = useEditProfileMutation();
 
   const [updateAvatar, { isSuccess, error }] = useUpdateAvatarMutation();
 
@@ -44,19 +46,22 @@ const ProfileInfo: FC<Props> = ({ avatar, user }) => {
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      // 3. Trigger RTK Query refetch to get updated user data from server
+    if (isSuccess || success) {
       refetch();
     }
-    if (error) {
-      console.error("Error updating avatar:", error);
+    if (error || updateError) {
+      console.error("Error updating profile:", error || updateError);
     }
-  }, [isSuccess, error, refetch]);
+    if (success) {
+      toast.success("Profile updated successfully!")
+    }
+  }, [isSuccess, success, error, updateError, refetch]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitting name update:", name);
-    // Your update profile API call here
+    if (name !== "") {
+      await editProfile({ name:name });
+    }
   };
 
   return (
