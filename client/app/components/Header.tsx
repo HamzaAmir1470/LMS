@@ -119,6 +119,9 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                       width={30}
                       height={30}
                       className="rounded-full ml-4"
+                      style={{
+                        border: activeItem === 5 ? "2px solid #37a39a" : "none",
+                      }}
                     />
                   </Link>
                 ) : (
