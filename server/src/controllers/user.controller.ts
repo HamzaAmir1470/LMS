@@ -374,8 +374,8 @@ export const updateUserPassword = CatchAsyncErrors(
         message: "Password updated successfully",
         user,
       });
-    } catch (error) {
-      return next(new ErrorHandler("Failed to update user password", 500));
+    } catch (error: any) {
+         return next(new ErrorHandler(error.message, 400));
     }
   },
 );

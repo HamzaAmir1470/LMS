@@ -23,7 +23,7 @@ export const authApi = apiSlice.injectEndpoints({
 
           dispatch(userRegistration({ token: result.data.activationToken }));
         } catch (error) {
-          console.error("Error during registration:", error);
+          console.log("Error during registration:", error);
         }
       },
     }),
