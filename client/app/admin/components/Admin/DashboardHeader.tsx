@@ -9,7 +9,7 @@ const DashboardHeader: FC<Props> = (props: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full flex items-center justify-end p-6 fixed top-5 right-0 z-50">
+    <div className="w-full flex items-center justify-end p-3 fixed top-5 right-0 z-50">
       <ThemeSwitcher />
       <div
         className="relative cursor-pointer m-2"
