@@ -2,6 +2,7 @@
 
 import React from "react";
 import CourseInformation from "./CourseInformation";
+import CourseData from "./CourseData";
 import CourseOptions from "./CourseOptions";
 type Props = {};
 
@@ -43,6 +44,16 @@ const CreateCourse = (props) => {
           <CourseInformation
             courseInfo={courseInfo}
             setCourseInfo={setCourseInfo}
+            active={active}
+            setActive={setActive}
+          />
+        )}
+        {active === 1 && (
+          <CourseData
+            benefits={benefits}
+            setBenefits={setBenefits}
+            prerequisites={prerequisites}
+            setPrerequisites={setPrerequisites}
             active={active}
             setActive={setActive}
           />
