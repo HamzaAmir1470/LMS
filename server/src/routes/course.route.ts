@@ -10,6 +10,7 @@ import {
   getSingleCourse,
   uploadCourse,
   deleteCourse,
+  generateVideoUrl,
 } from "../controllers/course.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
 import { authorizeRoles } from "../middleware/auth.js";
@@ -45,12 +46,14 @@ courseRouter.get(
   authorizeRoles("admin"),
   getAllCourses,
 );
+
+courseRouter.post("/getVdoCipherOTP", generateVideoUrl);
+
 courseRouter.delete(
   "/delete-course/:id",
   isAuthenticated,
   authorizeRoles("admin"),
   deleteCourse,
 );
-
 
 export default courseRouter;

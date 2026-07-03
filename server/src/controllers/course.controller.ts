@@ -13,7 +13,7 @@ import path from "node:path";
 import sendEmail from "../utils/sendMail.js";
 import * as ejs from "ejs";
 import NotificationModel from "../models/notification.model.js";
-import { getAllUsersService } from "../services/user.service.js";
+import axios from "axios";
 
 // upload course
 export const uploadCourse = CatchAsyncErrors(
@@ -444,6 +444,30 @@ export const deleteCourse = CatchAsyncErrors(
       });
     } catch (error) {
       return next(new ErrorHandler((error as Error).message, 500));
+    }
+  },
+);
+
+// generate video url
+export const generateVideoUrl = CatchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { videoId } = req.body;
+      const response = await axios.post(
+        `https://dev.vdocipher.com/api/videos/${videoId}/otp`,
+        { ttl: 300 },
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Apisecret ${process.env.VDOCIPHER_API_KEY}`,
+          },
+        },
+      );
+
+      res.json(response.data);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
     }
   },
 );
