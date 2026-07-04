@@ -67,9 +67,9 @@ const CourseInformation: FC<Props> = ({
             type="name"
             name=""
             required
-            value={courseInfo?.name || ""}
+            value={courseInfo?.title || ""}
             onChange={(e) =>
-              setCourseInfo({ ...courseInfo, name: e.target.value })
+              setCourseInfo({ ...courseInfo, title: e.target.value })
             }
             id="name"
             placeholder="MERN stack LMS plateform with next 13"

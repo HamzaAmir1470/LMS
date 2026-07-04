@@ -1,16 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import CourseInformation from "./CourseInformation";
 import CourseData from "./CourseData";
 import CourseOptions from "./CourseOptions";
 import CourseContent from "./CourseContent";
 import CoursePreview from "./CoursePreview";
+import { useCreateCourseMutation } from "@/redux/features/courses/coursesApi";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 type Props = {};
 
-const CreateCourse = (props) => {
+const CreateCourse = (props: Props) => {
+  const router = useRouter();
   const [active, setActive] = React.useState(0);
+
+  const [createCourse, { isLoading, error, isSuccess }] =
+    useCreateCourseMutation();
+
   const [courseInfo, setCourseInfo] = React.useState({
     title: "",
     description: "",
@@ -21,6 +29,7 @@ const CreateCourse = (props) => {
     demoUrl: "",
     thumbnail: "",
   });
+
   const [benefits, setBenefits] = React.useState([{ title: "" }]);
   const [prerequisites, setPrerequisites] = React.useState([{ title: "" }]);
   const [courseContentData, setCourseContentData] = React.useState([
@@ -38,18 +47,31 @@ const CreateCourse = (props) => {
       suggestion: "",
     },
   ]);
-  const [courseData, setCourseData] = React.useState({});
+  const [courseData, setCourseData] = React.useState<any>({});
 
-  const handleSubmit = async () => {
-    // formate benefits array
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Course created successfully");
+      router.push("/admin/courses");
+    }
+    if (error) {
+      if ("data" in error) {
+        const errMsg = (error as any).data?.message || "An error occurred";
+        toast.error(errMsg);
+      }
+    }
+  }, [isLoading, isSuccess, error, router]);
+
+  // Builds the clean payload object from your active states
+  const prepareCoursePayload = () => {
     const formattedBenefits = benefits.map((benefit) => ({
       title: benefit.title,
     }));
-    // formated Prerequisites array
+
     const formattedPrerequisites = prerequisites.map((prerequisite) => ({
       title: prerequisite.title,
     }));
-    // course content data
+
     const formattedCourseContentData = courseContentData.map((content) => ({
       videoUrl: content.videoUrl,
       title: content.title,
@@ -62,12 +84,11 @@ const CreateCourse = (props) => {
       suggestion: content.suggestion,
     }));
 
-    // prepare our data object
-    const data = {
+    return {
       name: courseInfo.title,
       description: courseInfo.description,
-      price: courseInfo.price,
-      estimatedPrice: courseInfo.estimatedPrice,
+      price: Number(courseInfo.price) || 0,
+      estimatedPrice: Number(courseInfo.estimatedPrice) || 0,
       tags: courseInfo.tags,
       level: courseInfo.level,
       thumbnail: courseInfo.thumbnail,
@@ -77,11 +98,19 @@ const CreateCourse = (props) => {
       courseContent: formattedCourseContentData,
       totalVideos: courseContentData.length,
     };
+  };
+
+  const handleSubmit = async () => {
+    const data = prepareCoursePayload();
     setCourseData(data);
   };
 
-  const handleCourseCreate = async (e: any) => {
-    const data = courseData;
+  const handleCourseCreate = async () => {
+    if (!isLoading) {
+      const payloadData = prepareCoursePayload();
+      console.log("OUTGOING PAYLOAD:", JSON.stringify(payloadData, null, 2));
+      await createCourse(payloadData);
+    }
   };
 
   return (
