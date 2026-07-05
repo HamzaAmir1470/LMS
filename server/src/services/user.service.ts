@@ -24,16 +24,29 @@ export const getAllUsersService = async (res: Response) => {
   });
 };
 
-// update user role
 export const updateUserRoleService = async (
-  id: string,
+  email: string,
   role: string,
   res: Response,
 ) => {
-  const user = await userModel.findByIdAndUpdate(id, { role }, { new: true });
+  const user = await userModel.findOneAndUpdate(
+    { email },
+    { role },
+    {
+      returnDocument: "after",
+    }
+  );
 
-  res.status(200).json({
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  return res.status(200).json({
     success: true,
     message: "User role updated successfully",
+    user,
   });
 };

@@ -315,8 +315,6 @@ export const updateUserInfo = CatchAsyncErrors(
 
       const user = await userModel.findById(userId);
 
-    
-
       if (name && user) {
         user.name = name;
       }
@@ -372,7 +370,7 @@ export const updateUserPassword = CatchAsyncErrors(
         user,
       });
     } catch (error: any) {
-         return next(new ErrorHandler(error.message, 400));
+      return next(new ErrorHandler(error.message, 400));
     }
   },
 );
@@ -441,8 +439,9 @@ export const getAllUsers = CatchAsyncErrors(
 export const updateUserRole = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id, role } = req.body;
-      updateUserRoleService(id, role, res);
+      const { email, role } = req.body;
+
+      await updateUserRoleService(email, role, res);
     } catch (error) {
       return next(new ErrorHandler("Failed to update user role", 500));
     }
