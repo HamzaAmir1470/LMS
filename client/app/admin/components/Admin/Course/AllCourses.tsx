@@ -1,20 +1,50 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Modal } from "@mui/material";
 import { AiOutlineDelete } from "react-icons/ai";
 import { useTheme } from "next-themes";
 import { FiEdit2 } from "react-icons/fi";
-import { useGetAllCoursesQuery } from "@/redux/features/courses/coursesApi";
+import {
+  useGetAllCoursesQuery,
+  useDeleteCourseMutation,
+} from "@/redux/features/courses/coursesApi";
 import Loader from "../../../../components/Loader/Loader";
 import { format } from "timeago.js";
+import toast from "react-hot-toast";
 
 type Props = {};
 
 const AllCourses = (props: Props) => {
   const { theme } = useTheme();
-  const { data, isLoading, error } = useGetAllCoursesQuery({});
+  const { data, isLoading, refetch } = useGetAllCoursesQuery({}, { refetchOnMountOrArgChange: true });
+  const [open, setOpen] = React.useState(false);
+  const [courseId, setCourseId] = React.useState("");
+  const [deleteCourse, { isSuccess, error }] = useDeleteCourseMutation();
+
+  useEffect(() => { 
+    if (isSuccess) {
+      refetch();
+      toast.success("Course deleted successfully");
+      setOpen(false);
+    }
+    if (error) {
+      if ("data" in error) {
+        const errMsg = (error as any).data?.message || "An error occurred";
+        toast.error(errMsg);
+      }
+    }
+  }, [isSuccess, error, refetch]);
+
+  const handleDelete = async () => {
+    await deleteCourse(courseId);
+    setOpen(false);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const columns = [
     { field: "id", headerName: "ID", flex: 0.3 },
@@ -50,7 +80,13 @@ const AllCourses = (props: Props) => {
       renderCell: (params: any) => {
         return (
           <Box className="flex items-center justify-center h-full w-full">
-            <Button className="min-w-0 p-2">
+            <Button
+              className="min-w-0 p-2"
+              onClick={() => {
+                setOpen(true);
+                setCourseId(params.row.id);
+              }}
+            >
               <AiOutlineDelete
                 size={20}
                 className="dark:text-white text-black hover:text-red-500 transition-colors"
@@ -166,6 +202,69 @@ const AllCourses = (props: Props) => {
           >
             <DataGrid checkboxSelection rows={rows} columns={columns} />
           </Box>
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="delete-course-modal"
+          >
+            <Box
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                w-[90%] sm:w-[420px]
+                bg-white dark:bg-slate-900
+                rounded-lg
+                border border-gray-200 dark:border-slate-800
+                shadow-2xl
+                outline-none
+                p-8"
+            >
+              <h2
+                className="
+                    text-2xl
+                    font-semibold
+                    text-center
+                    text-black
+                    dark:text-white"
+              >
+                Are you sure you want to delete this course?
+              </h2>
+
+              <div className="flex justify-center gap-6 mt-8">
+                <Button
+                  onClick={handleClose}
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#57c7a3",
+                    color: "#fff",
+                    textTransform: "none",
+                    borderRadius: "999px",
+                    px: 4,
+                    "&:hover": {
+                      backgroundColor: "#45a384",
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  onClick={handleDelete}
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#ef4444",
+                    color: "#fff",
+                    textTransform: "none",
+                    borderRadius: "999px",
+                    px: 4,
+                    "&:hover": {
+                      backgroundColor: "#dc2626",
+                    },
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </Box>
+          </Modal>
         </Box>
       )}
     </div>
