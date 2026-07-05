@@ -1,23 +1,35 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { FC, useEffect } from "react";
 import CourseInformation from "./CourseInformation";
 import CourseData from "./CourseData";
 import CourseOptions from "./CourseOptions";
 import CourseContent from "./CourseContent";
 import CoursePreview from "./CoursePreview";
-import { useCreateCourseMutation } from "@/redux/features/courses/coursesApi";
+import {
+  useEditCourseMutation,
+  useGetAllCoursesQuery,
+} from "@/redux/features/courses/coursesApi";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-type Props = {};
+type Props = {
+  id: string;
+};
 
-const CreateCourse = (props: Props) => {
+const EditCourse: FC<Props> = ({ id }) => {
+  // Corrected destructuring for RTK Query mutation hook
+  const [editCourse, { isSuccess, error }] = useEditCourseMutation();
   const router = useRouter();
   const [active, setActive] = React.useState(0);
 
-  const [createCourse, { isLoading, error, isSuccess }] =
-    useCreateCourseMutation();
+  // Fetching all courses to extract cache target cleanly
+  const { data, isLoading, refetch } = useGetAllCoursesQuery(
+    {},
+    { refetchOnMountOrArgChange: true },
+  );
+
+  const editCourseData = data && data.courses.find((i: any) => i._id === id);
 
   const [courseInfo, setCourseInfo] = React.useState({
     title: "",
@@ -27,7 +39,7 @@ const CreateCourse = (props: Props) => {
     tags: "",
     level: "",
     demoUrl: "",
-    thumbnail: "",
+    thumbnail: "", // Keeps components stable by holding a plain string URL
   });
 
   const [benefits, setBenefits] = React.useState([{ title: "" }]);
@@ -49,20 +61,63 @@ const CreateCourse = (props: Props) => {
   ]);
   const [courseData, setCourseData] = React.useState<any>({});
 
+  // Synchronize dynamic DB record fields cleanly into localized working states
+  useEffect(() => {
+    if (editCourseData) {
+      // Safely grab the string URL from the Cloudinary object structure
+      const currentThumbnailUrl =
+        editCourseData.thumbnail && typeof editCourseData.thumbnail === "object"
+          ? editCourseData.thumbnail.url
+          : editCourseData.thumbnail || "";
+
+      setCourseInfo({
+        title: editCourseData.name || "",
+        description: editCourseData.description || "",
+        price: editCourseData.price?.toString() || "",
+        estimatedPrice: editCourseData.estimatedPrice?.toString() || "",
+        tags: editCourseData.tags || "",
+        level: editCourseData.level || "",
+        demoUrl: editCourseData.demoUrl || "",
+        thumbnail: currentThumbnailUrl, // Extracted plain string URL prevents breaks in image tags
+      });
+
+      setBenefits(
+        editCourseData.benefits?.length
+          ? editCourseData.benefits
+          : [{ title: "" }],
+      );
+      setPrerequisites(
+        editCourseData.prerequisites?.length
+          ? editCourseData.prerequisites
+          : [{ title: "" }],
+      );
+      setCourseContentData(
+        editCourseData.courseData?.length
+          ? editCourseData.courseData
+          : editCourseData.courseContent || [],
+      );
+    }
+  }, [editCourseData]);
+
+  // Handle the lifecycle of the API update mutation request
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Course created successfully");
+      refetch(); // Refetch global list data to sync frontend cache with new DB values
+      toast.success("Course changes updated successfully");
       router.push("/admin/courses");
     }
     if (error) {
       if ("data" in error) {
-        const errMsg = (error as any).data?.message || "An error occurred";
+        const errMsg =
+          (error as any).data?.message || "An error occurred while saving";
         toast.error(errMsg);
+      } else {
+        toast.error("Failed to update course data.");
       }
     }
-  }, [isLoading, isSuccess, error, router]);
+  }, [isSuccess, error, router, refetch]);
 
-  // Builds the clean payload object from your active states
+  // Serializes state data structures into an integrated payload object
   const prepareCoursePayload = () => {
     const formattedBenefits = benefits.map((benefit) => ({
       title: benefit.title,
@@ -84,6 +139,16 @@ const CreateCourse = (props: Props) => {
       suggestion: content.suggestion,
     }));
 
+    // If the thumbnail wasn't modified, we wrap it back into the object your DB structure expects
+    let finalThumbnail = courseInfo.thumbnail;
+    if (
+      editCourseData?.thumbnail &&
+      typeof editCourseData.thumbnail === "object" &&
+      courseInfo.thumbnail === editCourseData.thumbnail.url
+    ) {
+      finalThumbnail = editCourseData.thumbnail;
+    }
+
     return {
       name: courseInfo.title,
       description: courseInfo.description,
@@ -91,27 +156,41 @@ const CreateCourse = (props: Props) => {
       estimatedPrice: Number(courseInfo.estimatedPrice) || 0,
       tags: courseInfo.tags,
       level: courseInfo.level,
-      thumbnail: courseInfo.thumbnail,
+      thumbnail: finalThumbnail,
       demoUrl: courseInfo.demoUrl,
       benefits: formattedBenefits,
       prerequisites: formattedPrerequisites,
-      courseData: formattedCourseContentData,
+      courseContent: formattedCourseContentData,
       totalVideos: courseContentData.length,
     };
   };
 
+  // Prepares structural snapshot right before navigating to step 4 (CoursePreview)
   const handleSubmit = async () => {
     const data = prepareCoursePayload();
     setCourseData(data);
   };
 
+  // Triggers real mutation submission back to the backend service APIs
   const handleCourseCreate = async () => {
-    if (!isLoading) {
-      const payloadData = prepareCoursePayload();
-      console.log("OUTGOING PAYLOAD:", JSON.stringify(payloadData, null, 2));
-      await createCourse(payloadData);
-    }
+    const payloadData = prepareCoursePayload();
+
+    // Execute mutation request with data payload wrapper context
+    await editCourse({
+      id: editCourseData._id,
+      data: payloadData,
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center">
+        <p className="text-lg font-medium text-gray-500 animate-pulse">
+          Loading data parameters...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex min-h-screen">
@@ -149,6 +228,7 @@ const CreateCourse = (props: Props) => {
             setActive={setActive}
             courseData={courseData}
             handleCourseCreate={handleCourseCreate}
+            isEdit={true}
           />
         )}
       </div>
@@ -159,4 +239,4 @@ const CreateCourse = (props: Props) => {
   );
 };
 
-export default CreateCourse;
+export default EditCourse;

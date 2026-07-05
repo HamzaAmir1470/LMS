@@ -19,9 +19,9 @@ export type AppDispatch = typeof store.dispatch;
 
 // call refresh token on app load
 const initializeApp = async () => {
-  await store.dispatch(
-    apiSlice.endpoints.refreshToken.initiate({}, { forceRefetch: true }),
-  );
+  // await store.dispatch(
+  //   apiSlice.endpoints.refreshToken.initiate({}, { forceRefetch: true }),
+  // );
   await store.dispatch(
     apiSlice.endpoints.loadUser.initiate({}, { forceRefetch: true }),
   );

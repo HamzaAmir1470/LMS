@@ -11,6 +11,7 @@ type Props = {
   setActive: (active: number) => void;
   courseData: any;
   handleCourseCreate: any;
+  isEdit: boolean;
 };
 
 const CoursePreview: FC<Props> = ({
@@ -18,14 +19,14 @@ const CoursePreview: FC<Props> = ({
   handleCourseCreate,
   setActive,
   active,
+  isEdit,
 }) => {
   // Safe math parsing to prevent NaN errors if fields are empty strings
   const estimatedPrice = Number(courseData?.estimatedPrice) || 0;
   const price = Number(courseData?.price) || 0;
 
-  const discountPercentage = estimatedPrice > 0 
-    ? ((estimatedPrice - price) / estimatedPrice) * 100 
-    : 0;
+  const discountPercentage =
+    estimatedPrice > 0 ? ((estimatedPrice - price) / estimatedPrice) * 100 : 0;
   const discountPercentagePrice = Math.max(0, Math.round(discountPercentage));
 
   const prevButton = () => {
@@ -46,7 +47,7 @@ const CoursePreview: FC<Props> = ({
             title={courseData?.title || "Course Demo Preview"}
           />
         </div>
-        
+
         {/* Pricing Dashboard */}
         <div className="flex items-center gap-4 mt-5 px-2 flex-wrap">
           <h1 className="text-[28px] font-[700] text-[#37a39a]">
@@ -68,17 +69,21 @@ const CoursePreview: FC<Props> = ({
       {/* Course Actions & Feature Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 items-start border-b border-gray-100 dark:border-zinc-800 pb-8">
         <div className="space-y-4">
-          <div className={`${styles.button} !w-full sm:!w-[220px] !h-[45px] !bg-red-600 hover:!bg-red-700 text-white font-[600] transition-colors shadow-sm cursor-not-allowed flex items-center justify-center`}>
+          <div
+            className={`${styles.button} !w-full sm:!w-[220px] !h-[45px] !bg-red-600 hover:!bg-red-700 text-white font-[600] transition-colors shadow-sm cursor-not-allowed flex items-center justify-center`}
+          >
             Buy Now ${price}
           </div>
-          
+
           <div className="flex items-center gap-2 max-w-md w-full">
             <input
               type="text"
               placeholder="Discount code..."
               className="w-full h-[40px] px-3 bg-transparent border border-gray-300 dark:border-zinc-700 rounded-md outline-none text-[15px] focus:border-[#37a39a] transition-all"
             />
-            <div className={`${styles.button} !w-[110px] !h-[40px] !mt-0 font-[500] hover:bg-opacity-90 transition-all flex items-center justify-center cursor-pointer`}>
+            <div
+              className={`${styles.button} !w-[110px] !h-[40px] !mt-0 font-[500] hover:bg-opacity-90 transition-all flex items-center justify-center cursor-pointer`}
+            >
               Apply
             </div>
           </div>
@@ -122,7 +127,8 @@ const CoursePreview: FC<Props> = ({
                   <IoCheckmarkDoneOutline size={20} />
                 </div>
                 <p className="text-[16px] text-gray-700 dark:text-gray-300 font-[400]">
-                  {item?.title || "Learning milestone dynamic description placeholder"}
+                  {item?.title ||
+                    "Learning milestone dynamic description placeholder"}
                 </p>
               </div>
             ))}
@@ -150,11 +156,10 @@ const CoursePreview: FC<Props> = ({
 
         {/* Course Description Segment */}
         <div className="w-full">
-          <h2 className="text-[22px] font-[600] mb-3">
-            Course Details
-          </h2>
+          <h2 className="text-[22px] font-[600] mb-3">Course Details</h2>
           <p className="text-[16px] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-line w-full break-words">
-            {courseData?.description || "No description provided for this course yet."}
+            {courseData?.description ||
+              "No description provided for this course yet."}
           </p>
         </div>
       </div>
@@ -173,7 +178,7 @@ const CoursePreview: FC<Props> = ({
           className="w-[140px] sm:w-[180px] flex items-center justify-center h-[42px] bg-[#219087] hover:bg-[#1a756d] text-white font-[600] rounded-md transition-colors cursor-pointer shadow-sm"
           onClick={createCourse}
         >
-          Publish Course
+          {isEdit ? "Update Course" : "Publish Course"}
         </button>
       </div>
     </div>

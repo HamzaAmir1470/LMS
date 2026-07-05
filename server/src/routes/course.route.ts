@@ -11,6 +11,7 @@ import {
   uploadCourse,
   deleteCourse,
   generateVideoUrl,
+  getAllCoursesAdmin,
 } from "../controllers/course.controller.js";
 import { isAuthenticated } from "../middleware/auth.js";
 import { authorizeRoles } from "../middleware/auth.js";
@@ -45,6 +46,13 @@ courseRouter.get(
   isAuthenticated,
   authorizeRoles("admin"),
   getAllCourses,
+);
+
+courseRouter.get(
+  "/get-admin-courses",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllCoursesAdmin,
 );
 
 courseRouter.post("/getVdoCipherOTP", generateVideoUrl);

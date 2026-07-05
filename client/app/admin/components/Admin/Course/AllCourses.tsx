@@ -13,6 +13,7 @@ import {
 import Loader from "../../../../components/Loader/Loader";
 import { format } from "timeago.js";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 type Props = {};
 
@@ -61,12 +62,12 @@ const AllCourses = (props: Props) => {
       renderCell: (params: any) => {
         return (
           <Box className="flex items-center justify-center h-full w-full">
-            <Button className="min-w-0 p-2">
+            <Link href={`/admin/edit-course/${params.row.id}`} className="min-w-0 p-2">
               <FiEdit2
                 size={20}
                 className="dark:text-white text-black hover:text-green-500 transition-colors"
               />
-            </Button>
+            </Link> 
           </Box>
         );
       },

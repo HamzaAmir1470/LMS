@@ -42,34 +42,57 @@ export const editCourse = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
-      const thumbnail = data.thumbnail;
-
-      if (thumbnail) {
-        await cloudinary.v2.uploader.destroy(data.thumbnail.public_id);
-
-        const result = await cloudinary.v2.uploader.upload(thumbnail, {
-          folder: "courses",
-        });
-        data.thumbnail = {
-          public_id: result.public_id,
-          url: result.secure_url,
-        };
-      }
-
       const courseId = req.params.id;
 
-      const course = await CourseModel.findById(
+      const course = await CourseModel.findById(courseId);
+
+      if (!course) {
+        return next(new ErrorHandler("Course not found", 404));
+      }
+
+      // Only upload if a NEW base64 image was sent
+      if (
+        data.thumbnail &&
+        typeof data.thumbnail === "string" &&
+        data.thumbnail.startsWith("data:")
+      ) {
+        // Delete old Cloudinary image
+        if (course.thumbnail?.public_id) {
+          await cloudinary.v2.uploader.destroy(course.thumbnail.public_id);
+        }
+
+        // Upload new image
+        const uploadedImage = await cloudinary.v2.uploader.upload(
+          data.thumbnail,
+          {
+            folder: "courses",
+          },
+        );
+
+        data.thumbnail = {
+          public_id: uploadedImage.public_id,
+          url: uploadedImage.secure_url,
+        };
+      } else {
+        // Keep existing thumbnail
+        data.thumbnail = course.thumbnail;
+      }
+
+      const updatedCourse = await CourseModel.findByIdAndUpdate(
         courseId,
         {
           $set: data,
         },
-        { new: true },
+        {
+          returnDocument: "after",
+          runValidators: true,
+        },
       );
 
       res.status(200).json({
         success: true,
         message: "Course updated successfully",
-        course,
+        course: updatedCourse,
       });
     } catch (error) {
       return next(new ErrorHandler((error as Error).message, 500));
