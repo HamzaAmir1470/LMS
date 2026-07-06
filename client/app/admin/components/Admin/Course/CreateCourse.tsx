@@ -28,6 +28,7 @@ const CreateCourse = (props: Props) => {
     level: "",
     demoUrl: "",
     thumbnail: "",
+    category: "",
   });
 
   const [benefits, setBenefits] = React.useState([{ title: "" }]);
@@ -38,6 +39,7 @@ const CreateCourse = (props: Props) => {
       title: "",
       description: "",
       videoSection: "Untitled Section",
+      videoLength: "",
       links: [
         {
           title: "",
@@ -77,6 +79,7 @@ const CreateCourse = (props: Props) => {
       title: content.title,
       description: content.description,
       videoSection: content.videoSection,
+      videoLength: Number(content.videoLength) || 0, // FIXED: Added mapping so it passes to the database. (Change to `content.videoLength` if your backend expects a string)
       links: content.links.map((item) => ({
         title: item.title,
         url: item.url,
@@ -91,6 +94,7 @@ const CreateCourse = (props: Props) => {
       estimatedPrice: Number(courseInfo.estimatedPrice) || 0,
       tags: courseInfo.tags,
       level: courseInfo.level,
+      categories: courseInfo.category, 
       thumbnail: courseInfo.thumbnail,
       demoUrl: courseInfo.demoUrl,
       benefits: formattedBenefits,
