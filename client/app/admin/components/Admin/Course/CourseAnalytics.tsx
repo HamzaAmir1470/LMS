@@ -30,7 +30,6 @@ interface ChartDataPoint {
 const CourseAnalytics = (props: Props) => {
   const { data, isLoading } = useGetCoursesAnalyticsQuery({});
 
-  // 2. Wrapped the data transformation in useMemo so it only runs when data changes
   const analyticsData = useMemo<ChartDataPoint[]>(() => {
     if (!data?.courses?.last12Months) return [];
     

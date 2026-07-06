@@ -357,13 +357,7 @@ const AdminSidebar = () => {
             >
               {!isCollapsed && "Extras"}
             </Typography>
-            <Item
-              title="Settings"
-              to="/admin/settings"
-              icon={<SettingsIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+           
 
             <Item
               title="Logout"
