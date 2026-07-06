@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography } from "@mui/material";
 import "react-pro-sidebar/dist/css/styles.css";
@@ -27,7 +27,7 @@ import { useSelector } from "react-redux";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 type itemProps = {
@@ -85,6 +85,10 @@ const AdminSidebar = () => {
   const [selected, setSelected] = useState("Dashboard");
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  
+  // 1. Hook to track current path name changes
+  const pathname = usePathname();
+
   const avatarSrc =
     typeof user?.avatar === "string"
       ? user.avatar
@@ -93,6 +97,23 @@ const AdminSidebar = () => {
   const logOutHandler = async () => {
     await signOut({ callbackUrl: "/" });
   };
+
+  // 2. Synchronize active navigation link title with browser location path matching
+  useEffect(() => {
+    if (pathname === "/admin") setSelected("Dashboard");
+    else if (pathname === "/admin/users") setSelected("Users");
+    else if (pathname === "/admin/invoices") setSelected("Invoices");
+    else if (pathname === "/admin/create-course") setSelected("Create Course");
+    else if (pathname === "/admin/courses") setSelected("Live Courses");
+    else if (pathname === "/admin/hero") setSelected("Hero");
+    else if (pathname === "/admin/faq") setSelected("FAQ");
+    else if (pathname === "/admin/categories") setSelected("Categories");
+    else if (pathname === "/admin/team") setSelected("Manage Team");
+    else if (pathname === "/admin/course-analytics") setSelected("Course Analytics");
+    else if (pathname === "/admin/orders-analytics") setSelected("Orders Analytics");
+    else if (pathname === "/admin/users-analytics") setSelected("Users Analytics");
+    else if (pathname === "/admin/settings") setSelected("Settings");
+  }, [pathname]);
 
   return (
     <Box
@@ -185,8 +206,7 @@ const AdminSidebar = () => {
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="h4"
-                  className="!text-[20px] text-black
-                 dark:text-[#ffffffc1]"
+                  className="!text-[20px] text-black dark:text-[#ffffffc1]"
                   sx={{ m: "10px 0 0 0" }}
                 >
                   {user?.name || "User"}
@@ -194,8 +214,7 @@ const AdminSidebar = () => {
                 <Typography
                   variant="h6"
                   sx={{ m: "10px 0 0 0" }}
-                  className="!text-[20px] text-black
-                 dark:text-[#ffffffc1] capitalize!"
+                  className="!text-[20px] text-black dark:text-[#ffffffc1] capitalize!"
                 >
                   - {user?.role}
                 </Typography>
@@ -271,7 +290,7 @@ const AdminSidebar = () => {
 
             <Item
               title="FAQ"
-              to="/faq"
+              to="/admin/faq"
               icon={<QuizIcon />}
               selected={selected}
               setSelected={setSelected}
