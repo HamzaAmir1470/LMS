@@ -8,14 +8,15 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
+  Label,
 } from "recharts";
 import Loader from "../../../../components/Loader/Loader";
 import { useGetOrdersAnalyticsQuery } from "@/redux/features/analytics/analyticsApi";
 import { styles } from "@/app/styles/style";
 
-type Props = {};
-
+type Props = {
+  isDashboard?: boolean;
+};
 
 interface AnalyticsItem {
   month: string;
@@ -27,7 +28,7 @@ interface ChartDataPoint {
   count: number;
 }
 
-const OrdersAnalytics = (props: Props) => {
+const OrdersAnalytics = ({ isDashboard = false }: Props) => {
   const { data, isLoading } = useGetOrdersAnalyticsQuery({});
 
   const analyticsData = useMemo<ChartDataPoint[]>(() => {
@@ -37,111 +38,138 @@ const OrdersAnalytics = (props: Props) => {
       name: item.month,
       count: item.count,
     }));
-    
+  }, [data]);
 
-    return [
-      { name: "Sep 2, 2025", count: 120 },
-      { name: "Sep 30, 2025", count: 450 },
-      { name: "Oct 28, 2025", count: 310 },
-      { name: "Nov 25, 2025", count: 340 },
-      { name: "Dec 23, 2025", count: 190 },
-      { name: "Jan 20, 2026", count: 110 },
-      { name: "Feb 17, 2026", count: 280 },
-      { name: "Mar 17, 2026", count: 540 },
-      { name: "Apr 14, 2026", count: 210 },
-      { name: "May 12, 2026", count: 420 },
-      { name: "Jun 9, 2026", count: 680 },
-      { name: "Jul 7, 2026", count: 520 },
-    ];
-  }, []);
-
-  
   const hasData = useMemo(() => {
     return (
       analyticsData.length > 0 && analyticsData.some((item) => item.count > 0)
     );
   }, [analyticsData]);
-  
 
-  return (
-    <>
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <div className="h-screen  text-white">
-          <div className="mt-[50px] pt-4">
-            <h1 className={`${styles.title} px-5 !text-start !text-white`}>
-              Orders Analytics
-            </h1>
-            <p className={`${styles.label} px-5 !text-gray-400`}>
-              Analyze order activity and engagement over time.
-            </p>
-          </div>
+  if (isLoading) return <Loader />;
 
-          <div className="w-full h-[75%] flex items-center justify-center">
-            {!hasData ? (
-              <div className="text-center">
-                <p className="text-gray-500 font-medium">
-                  No order activity recorded yet.
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  New orders will appear on the timeline below.
-                </p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="95%" height="70%">
-                <LineChart
-                  data={analyticsData}
-                  margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} />
-
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#64748b", fontSize: 12 }}
-                    axisLine={{ stroke: "#1e293b" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[0, "auto"]}
-                    allowDecimals={false}
-                    tick={{ fill: "#64748b", fontSize: 12 }}
-                    axisLine={{ stroke: "#1e293b" }}
-                    tickLine={false}
-                  />
-
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#ffffff",
-                      borderRadius: "4px",
-                      border: "none",
-                      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-                    }}
-                    labelStyle={{ display: "none" }}
-                    itemStyle={{ color: "#3b49df", fontWeight: "600", fontSize: "14px" }}
-                    cursor={{ stroke: "#3b49df", strokeWidth: 1 }}
-                  />
-
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#3b49df"
-                    strokeWidth={3}
-                    dot={{ r: 2, fill: "#3b49df", strokeWidth: 0 }}
-                    activeDot={{
-                      r: 6,
-                      stroke: "#ffffff",
-                      strokeWidth: 2,
-                      fill: "#3b49df",
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+  // Full page view (when not in dashboard)
+  if (!isDashboard) {
+    return (
+      <div className="h-screen">
+        <div className="mt-[50px]">
+          <h1 className={`${styles.title} px-5 !text-start`}>
+            Orders Analytics
+          </h1>
+          <p className={`${styles.label} px-5`}>
+            Analyze order activity and engagement over time.
+          </p>
         </div>
+
+        <div className="w-full h-[90%] flex items-center justify-center">
+          {!hasData ? (
+            <p className="text-gray-500">No data available for the last 12 months.</p>
+          ) : (
+            <ResponsiveContainer width="90%" height="50%">
+              <LineChart data={analyticsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <Label offset={0} position="insideBottom" />
+                <YAxis domain={[0, "auto"]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: "4px",
+                    border: "none",
+                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                    padding: "8px 12px",
+                  }}
+                  labelStyle={{ display: "none" }}
+                  itemStyle={{
+                    color: "#3faf82",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                  }}
+                  cursor={{ stroke: "#3faf82", strokeWidth: 1 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#3faf82"
+                  strokeWidth={3}
+                  dot={{ r: 2, fill: "#3faf82", strokeWidth: 0 }}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#ffffff",
+                    strokeWidth: 2,
+                    fill: "#3faf82",
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Dashboard view (compact)
+  return (
+    <div className="w-full h-full">
+      {!hasData ? (
+        <div className="h-full flex items-center justify-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            No order activity recorded yet.
+          </p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={analyticsData}
+            margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+          >
+            <XAxis
+              dataKey="name"
+              tick={{ fill: "#64748b", fontSize: 10 }}
+              axisLine={{ stroke: "#1e293b" }}
+              tickLine={false}
+              interval={Math.floor(analyticsData.length / 6)}
+            />
+            <YAxis
+              domain={[0, "auto"]}
+              allowDecimals={false}
+              tick={{ fill: "#64748b", fontSize: 10 }}
+              axisLine={{ stroke: "#1e293b" }}
+              tickLine={false}
+              width={30}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#ffffff",
+                borderRadius: "4px",
+                border: "none",
+                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                padding: "8px 12px",
+              }}
+              labelStyle={{ display: "none" }}
+              itemStyle={{
+                color: "#3faf82",
+                fontWeight: "600",
+                fontSize: "12px",
+              }}
+              cursor={{ stroke: "#3faf82", strokeWidth: 1 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#3faf82"
+              strokeWidth={2}
+              dot={{ r: 2, fill: "#3faf82", strokeWidth: 0 }}
+              activeDot={{
+                r: 5,
+                stroke: "#ffffff",
+                strokeWidth: 2,
+                fill: "#3faf82",
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       )}
-    </>
+    </div>
   );
 };
 
