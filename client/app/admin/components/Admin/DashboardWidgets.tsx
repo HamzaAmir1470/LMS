@@ -54,7 +54,7 @@ const DashboardWidgets: FC<Props> = ({ open }) => {
   const { theme } = useTheme();
 
   return (
-    <div className="w-full md:pl-[20px] pr-[20px] mt-[120px] overflow-hidden h-[calc(100vh-140px)]">
+    <div className="w-full mt-25 pr-20">
       <div className="grid grid-cols-4 grid-rows-2 gap-4 h-full">
         {/* Users Analytics - Top Left */}
         <div className="col-span-2 row-span-1 bg-white dark:bg-[#111C43] rounded-lg shadow-sm p-4 overflow-hidden">
