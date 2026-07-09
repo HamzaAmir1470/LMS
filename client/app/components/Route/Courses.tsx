@@ -29,7 +29,7 @@ const Courses = (props: Props) => {
             Opportunity
           </span>{" "}
           <br />
-          Opportunity with Our Courses
+          with Our Courses
         </h1>
 
         <br />
