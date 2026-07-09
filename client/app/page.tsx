@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Route/Hero";
+import Courses from "./components/Route/Courses";
+import Review from "./components/Route/Reviews";
 
 const Page = () => {
   const [open, setOpen] = useState(false);
@@ -19,6 +21,8 @@ const Page = () => {
         route={route}
       />
       <Hero />
+      <Courses />
+      <Review />
     </div>
   );
 };

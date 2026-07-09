@@ -1,11 +1,15 @@
 "use client";
 
+import { useGetHeroDataQuery } from "@/redux/features/layout/layoutApi";
 import Image from "next/image";
 import Link from "next/link";
 import React, { FC } from "react";
 import { BiSearch } from "react-icons/bi";
 
 const Hero: FC = () => {
+
+  const { data, refetch } = useGetHeroDataQuery("Banner");
+
   return (
     <div className="w-full min-h-screen flex flex-col 1000px:flex-row items-center justify-center relative overflow-hidden px-4 1000px:px-12 bg-white dark:bg-gray-900 transition-colors duration-300">
       {/* Left Section - Image with Animation Background */}
@@ -14,10 +18,10 @@ const Hero: FC = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[85%] max-w-[500px] max-h-[500px] 1500px:max-w-[600px] 1500px:max-h-[600px] hero_animation rounded-full opacity-60 dark:opacity-20 bg-gradient-to-r from-[#21b3e4] to-[#46e256]"></div>
 
         <Image
-          src="/assets/banner-img-1.png"
+          src={data?.layout?.banner?.image?.url || "/assets/hero-banner.png"}
           alt="Online Learning Banner"
-          width={500}
-          height={500}
+          width={400}
+          height={400}
           className="object-contain w-[85%] h-auto z-[10] max-w-[450px] 1000px:max-w-full relative"
           priority
         />
@@ -26,18 +30,11 @@ const Hero: FC = () => {
       {/* Right Section - Content */}
       <div className="1000px:w-[55%] flex flex-col items-center 1000px:items-start text-center 1000px:text-left mt-[40px] 1000px:mt-0 px-2 1000px:pl-8">
         <h2 className="text-gray-800 dark:text-white text-[28px] sm:text-[35px] md:text-[45px] 1000px:text-[50px] 1100px:text-[56px] 1500px:text-[68px] font-[600] font-Josefin py-2 1000px:leading-[65px] 1100px:leading-[70px] 1500px:leading-[80px] w-full tracking-wide">
-          Improve Your Online
-          <br />
-          Learning Experience
-          <br />
-          <span className="text-[#21b3e4] dark:text-[#46e256] transition-colors duration-300">
-            Better Instantly
-          </span>
+          {data?.layout?.banner?.title}
         </h2>
 
         <p className="text-gray-600 dark:text-gray-300 font-Josefin font-[600] text-[16px] sm:text-[17px] 1000px:text-[18px] max-w-full 1100px:max-w-[85%] 1500px:max-w-[70%] mt-6 leading-7 transition-colors duration-300">
-          We have 40k+ Online courses & 500K+ Online registered student. Find
-          your desired Courses from them.
+          {data?.layout?.banner?.subtitle}
         </p>
 
         {/* Search Bar */}
