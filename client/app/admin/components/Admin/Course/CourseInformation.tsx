@@ -183,17 +183,23 @@ const CourseInformation: FC<Props> = ({
             <select
               id="category"
               required
-              value={courseInfo?.category || ""}
+              value={courseInfo?.category || courseInfo?.categories || ""}
               onChange={(e) =>
-                setCourseInfo({ ...courseInfo, category: e.target.value })
+                setCourseInfo({
+                  ...courseInfo,
+                  category: e.target.value,
+                  categories: e.target.value, // Update both fields to be completely safe
+                })
               }
               className={`${styles.input} dark:bg-[#111C2D] dark:text-white bg-white text-black border border-gray-300 dark:border-gray-700 rounded p-2 h-[45px] w-full focus:outline-none`}
             >
-              <option value="" className="dark:bg-[#111C2D] text-gray-400">Select Category</option>
+              <option value="" className="dark:bg-[#111C2D] text-gray-400">
+                Select Category
+              </option>
               {categories?.map((category: any) => (
-                <option 
-                  key={category._id} 
-                  value={category.title} 
+                <option
+                  key={category._id}
+                  value={category.title}
                   className="dark:bg-[#111C2D] dark:text-white text-black"
                 >
                   {category.title}

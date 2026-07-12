@@ -18,12 +18,10 @@ type Props = {
 };
 
 const EditCourse: FC<Props> = ({ id }) => {
-  // Corrected destructuring for RTK Query mutation hook
   const [editCourse, { isSuccess, error }] = useEditCourseMutation();
   const router = useRouter();
   const [active, setActive] = React.useState(0);
 
-  // Fetching all courses to extract cache target cleanly
   const { data, isLoading, refetch } = useGetAllCoursesQuery(
     {},
     { refetchOnMountOrArgChange: true },
@@ -39,7 +37,8 @@ const EditCourse: FC<Props> = ({ id }) => {
     tags: "",
     level: "",
     demoUrl: "",
-    thumbnail: "", // Keeps components stable by holding a plain string URL
+    thumbnail: "", 
+    categories: "",
   });
 
   const [benefits, setBenefits] = React.useState([{ title: "" }]);
@@ -50,6 +49,7 @@ const EditCourse: FC<Props> = ({ id }) => {
       title: "",
       description: "",
       videoSection: "Untitled Section",
+      videoLength: 0, // Ensure value fallback initialization setup
       links: [
         {
           title: "",
@@ -61,10 +61,8 @@ const EditCourse: FC<Props> = ({ id }) => {
   ]);
   const [courseData, setCourseData] = React.useState<any>({});
 
-  // Synchronize dynamic DB record fields cleanly into localized working states
   useEffect(() => {
     if (editCourseData) {
-      // Safely grab the string URL from the Cloudinary object structure
       const currentThumbnailUrl =
         editCourseData.thumbnail && typeof editCourseData.thumbnail === "object"
           ? editCourseData.thumbnail.url
@@ -78,7 +76,8 @@ const EditCourse: FC<Props> = ({ id }) => {
         tags: editCourseData.tags || "",
         level: editCourseData.level || "",
         demoUrl: editCourseData.demoUrl || "",
-        thumbnail: currentThumbnailUrl, // Extracted plain string URL prevents breaks in image tags
+        thumbnail: currentThumbnailUrl, 
+        categories: editCourseData.categories || "",
       });
 
       setBenefits(
@@ -99,10 +98,9 @@ const EditCourse: FC<Props> = ({ id }) => {
     }
   }, [editCourseData]);
 
-  // Handle the lifecycle of the API update mutation request
   useEffect(() => {
     if (isSuccess) {
-      refetch(); // Refetch global list data to sync frontend cache with new DB values
+      refetch(); 
       toast.success("Course changes updated successfully");
       router.push("/admin/courses");
     }
@@ -117,7 +115,6 @@ const EditCourse: FC<Props> = ({ id }) => {
     }
   }, [isSuccess, error, router, refetch]);
 
-  // Serializes state data structures into an integrated payload object
   const prepareCoursePayload = () => {
     const formattedBenefits = benefits.map((benefit) => ({
       title: benefit.title,
@@ -127,19 +124,21 @@ const EditCourse: FC<Props> = ({ id }) => {
       title: prerequisite.title,
     }));
 
+    // FIXED: Mapping videoLength explicitly into backend format array structure
     const formattedCourseContentData = courseContentData.map((content) => ({
       videoUrl: content.videoUrl,
       title: content.title,
       description: content.description,
       videoSection: content.videoSection,
+      videoLength: Number(content.videoLength) || 0, 
       links: content.links.map((item) => ({
         title: item.title,
         url: item.url,
       })),
       suggestion: content.suggestion,
+      categories: content.categories || "",
     }));
 
-    // If the thumbnail wasn't modified, we wrap it back into the object your DB structure expects
     let finalThumbnail = courseInfo.thumbnail;
     if (
       editCourseData?.thumbnail &&
@@ -162,20 +161,24 @@ const EditCourse: FC<Props> = ({ id }) => {
       prerequisites: formattedPrerequisites,
       courseContent: formattedCourseContentData,
       totalVideos: courseContentData.length,
+      categories: courseInfo.categories || "",
     };
   };
 
-  // Prepares structural snapshot right before navigating to step 4 (CoursePreview)
   const handleSubmit = async () => {
     const data = prepareCoursePayload();
     setCourseData(data);
   };
 
-  // Triggers real mutation submission back to the backend service APIs
   const handleCourseCreate = async () => {
-    const payloadData = prepareCoursePayload();
+    // FIXED: Use the courseData variable that has been updated via preview or fall back to a freshly prepared payload
+    const payloadData = Object.keys(courseData).length > 0 ? courseData : prepareCoursePayload();
 
-    // Execute mutation request with data payload wrapper context
+    if (!editCourseData?._id) {
+      toast.error("Course reference ID is missing.");
+      return;
+    }
+
     await editCourse({
       id: editCourseData._id,
       data: payloadData,
