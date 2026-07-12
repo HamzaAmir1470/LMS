@@ -2,20 +2,24 @@ import { styles } from "@/app/styles/style";
 import CoursePlayer from "@/app/utils/CoursePlayer";
 import { Ratings } from "@/app/utils/Ratings";
 import Link from "next/link";
-import React from "react";
-import { IoCheckmarkDoneOutline } from "react-icons/io5";
+import React, { useEffect } from "react";
+import { IoCheckmarkDoneOutline, IoCloseOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { format } from "timeago.js";
 import CourseContentList from "../Course/CourseContentList";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "../Payment/CheckoutForm";
 
 type Props = {
   data: any;
+  clientSecret: string;
+  stripePromise: any;
 };
 
-const CourseDetails = ({ data }: Props) => {
+const CourseDetails = ({ data, clientSecret, stripePromise }: Props) => {
+  const [open, setOpen] = React.useState(false);
   const { user } = useSelector((state: any) => state.auth);
 
-  // Safe Math Calculations using optional chaining and defaults
   const estimatedPrice = data?.estimatedPrice || 0;
   const price = data?.price || 0;
 
@@ -27,10 +31,10 @@ const CourseDetails = ({ data }: Props) => {
     discountPercentage > 0 ? discountPercentage.toFixed(0) : "0";
 
   const isPurchased =
-    user && user?.courses?.find((item: any) => item.id === data?._id);
+    user && user?.courses?.find((item: any) => item.courseId === data?._id);
 
   const handleOrder = () => {
-    console.log("Order placed for course:", data?.title);
+    setOpen(true);
   };
 
   return (
@@ -212,6 +216,39 @@ const CourseDetails = ({ data }: Props) => {
           </div>
         </div>
       </div>
+
+      <>
+        {open && (
+          <div className="w-full h-screen bg-[#0000005d] fixed top-0 left-0 z-50 flex items-center justify-center">
+            {/* Container Box */}
+            <div className="w-[500px] min-h-[500px] bg-white rounded-xl shadow-lg p-5 relative flex flex-col justify-between">
+              {/* Close Button Row */}
+              <div className="w-full flex justify-end">
+                <IoCloseOutline
+                  size={35}
+                  className="text-black cursor-pointer hover:text-red-500 transition-colors"
+                  onClick={() => setOpen(false)}
+                />
+              </div>
+
+              {/* Payment Mount Content Container */}
+              <div className="w-full my-auto text-black">
+                {stripePromise && clientSecret ? (
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm setOpen={setOpen} data={data} />
+                  </Elements>
+                ) : (
+                  <div className="flex justify-center items-center h-[200px]">
+                    <span className="text-black font-Poppins">
+                      Loading Payment Engine...
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     </div>
   );
 };

@@ -4,15 +4,15 @@ import OrderModel from "../models/order.model.js";
 
 // create order
 export const NewOrder = CatchAsyncErrors(
-  async (data: any, next: NextFunction, res: Response) => {
+  async (data: any, res: Response, next: NextFunction) => {
     const order = await OrderModel.create(data);
+
     res.status(201).json({
       success: true,
       order,
     });
   },
 );
-
 // get all orders (admin only)
 export const getAllOrdersService = async (res: Response) => {
   const orders = await OrderModel.find().sort({ createdAt: -1 });
