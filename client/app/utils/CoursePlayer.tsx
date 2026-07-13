@@ -1,5 +1,5 @@
-import React, { FC, useEffect } from "react";
-import axios from "axios";
+import React, { FC, useEffect, useState } from "react";
+import axios from "axios"; 
 
 type Props = {
   videoUrl: string;
@@ -7,7 +7,7 @@ type Props = {
 };
 
 const CoursePlayer: FC<Props> = ({ videoUrl, title }) => {
-  const [videoData, setVideoData] = React.useState({
+  const [videoData, setVideoData] = useState({
     otp: "",
     playbackInfo: "",
   });
@@ -19,25 +19,24 @@ const CoursePlayer: FC<Props> = ({ videoUrl, title }) => {
       })
       .then((response) => {
         setVideoData(response.data);
-      });
+      })
+      .catch((error) => console.error("Error fetching video OTP:", error));
   }, [videoUrl]);
 
   return (
-    <div style={{ paddingTop: "41%", position: "relative" }}>
-      {videoData.otp && videoData.playbackInfo !== "" && (
+    <div className="relative w-full pt-[56.25%] bg-black rounded-lg overflow-hidden shadow-lg">
+      {videoData.otp && videoData.playbackInfo ? (
         <iframe
           src={`https://player.vdocipher.com/v2/?otp=${videoData?.otp}&playbackInfo=${videoData.playbackInfo}&player=cllovlC2UD3wrx4Y`}
-          style={{
-            border: 0,
-            width: "90%",
-            height: "100%",
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
+          className="absolute top-0 left-0 w-full h-full border-0"
           allowFullScreen={true}
           allow="encrypted-media"
+          title={title}
         ></iframe>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center text-white bg-slate-800 animate-pulse">
+          Loading Video...
+        </div>
       )}
     </div>
   );

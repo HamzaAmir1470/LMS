@@ -42,6 +42,7 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
     setLogOut(true);
     await signOut();
   };
+
   useEffect(() => {
     if (!user && data) {
       socialAuth({
@@ -68,7 +69,6 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -76,12 +76,16 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
 
   return (
     <>
-      <div className="w-full relative">
+      {/* FIXED: Extracted full layout wrapper rules. 
+        When 'active' is true, we add a dummy component placeholder ('h-[80px]') 
+        so the main page code below doesn't pop or slide upwards violently when the navigation detaches.
+      */}
+      <div className={`w-full relative h-[80px] z-[80]`}>
         <div
           className={`${
             active
-              ? "bg-white/80 backdrop-blur-md dark:bg-gray-900/50 dark:bg-gradient-to-b dark:from-gray-900 dark:to-black fixed top-0 left-0 w-full h-[80px] z-[80] border-b border-gray-200 dark:border-white/10 shadow-xl transition-all duration-500"
-              : "w-full bg-white dark:bg-transparent border-b border-gray-100 dark:border-white/10 h-[80px] z-[80] shadow-sm dark:shadow "
+              ? "bg-white/80 backdrop-blur-md dark:bg-gray-900/50 dark:bg-gradient-to-b dark:from-gray-900 dark:to-black fixed top-0 left-0 w-full h-[80px] border-b border-gray-200 dark:border-white/10 shadow-xl transition-all duration-500"
+              : "w-full bg-white dark:bg-transparent border-b border-gray-100 dark:border-white/10 h-[80px] shadow-sm dark:shadow"
           }`}
         >
           <div className="w-[95%] 800px:w-[92%] h-full mx-auto">
@@ -127,10 +131,10 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                 ) : (
                   <HiOutlineUserCircle
                     size={25}
-                    className="hidden 800px:block cursor-pointer text-black dark:text-white ml-4"
+                    className="cursor-pointer text-black dark:text-white ml-4"
                     onClick={() => {
                       setOpen(true);
-                      setRoute("Login"); // Opens up Login form by default
+                      setRoute("Login");
                     }}
                   />
                 )}
@@ -138,54 +142,50 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
             </div>
           </div>
 
-          {/* Mobile Sidebar */}
+          {/* Mobile Sidebar Modal Backdrop */}
           {openSidebar && (
             <div
-              className="fixed w-full h-screen top-0 left-0 z-[99999] bg-[#00000024]"
+              className="fixed w-full h-screen top-0 left-0 z-[99999] bg-black/20 backdrop-blur-sm"
               onClick={() => setOpenSidebar(false)}
             >
               <div
-                className="w-[70%] fixed z-[999999999] h-screen bg-white dark:bg-slate-900 dark:bg-opacity-90 top-0 right-0 p-4"
+                className="w-[70%] sm:w-[40%] fixed z-[999999999] h-screen bg-white dark:bg-slate-900 top-0 right-0 p-4 shadow-2xl flex flex-col justify-between"
                 onClick={(e) => e.stopPropagation()}
               >
-                <NavItems activeItem={activeItem} isMobile={true} />
-
-                <div className="flex justify-center mt-6">
-                  <ThemeSwitcher />
+                <div>
+                  <NavItems activeItem={activeItem} isMobile={true} />
+                  <div className="flex justify-center mt-6">
+                    <ThemeSwitcher />
+                  </div>
                 </div>
 
-                {/* Mobile User Action */}
-                <div className="flex justify-center mt-6">
-                  <button
-                    onClick={() => {
-                      setOpen(true);
-                      setRoute("Login");
-                      setOpenSidebar(false);
-                    }}
-                    className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                  >
-                    <HiOutlineUserCircle
-                      size={25}
-                      className="hidden 800px:block cursor-pointer text-black dark:text-white ml-4"
-                      onClick={() => {
-                        setOpen(true);
-                        setRoute("Login");
-                      }}
-                    />
-                  </button>
+                {/* Bottom Footer Details */}
+                <div className="pb-6">
+                  {!user && (
+                    <div className="flex justify-center mb-6">
+                      <button
+                        onClick={() => {
+                          setOpen(true);
+                          setRoute("Login");
+                          setOpenSidebar(false);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                      >
+                        <HiOutlineUserCircle size={20} />
+                        <span>Sign In</span>
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-[13px] text-gray-500 dark:text-gray-400 text-center">
+                    Copyright © 2026 E-Learning. All rights reserved.
+                  </p>
                 </div>
-                <br />
-                <br />
-                <br />
-                <p className="text-[16px] px-2 pl-5 text-black dark:text-white text-center">
-                  Copyright © 2023 E-Learning. All rights reserved.
-                </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Unified CustomModel Wrapper */}
+        {/* Unified CustomModel Authentication Popup Modal */}
         {open &&
           (route === "Login" ||
             route === "SignUp" ||
