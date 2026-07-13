@@ -14,6 +14,11 @@ import sendEmail from "../utils/sendMail.js";
 import * as ejs from "ejs";
 import NotificationModel from "../models/notification.model.js";
 import axios from "axios";
+import { fileURLToPath } from "url";
+
+// Define __filename and __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // upload course
 export const uploadCourse = CatchAsyncErrors(
@@ -176,6 +181,7 @@ export const getCourseByUser = CatchAsyncErrors(
       res.status(200).json({
         success: true,
         content,
+        course,
       });
     } catch (error) {
       return next(new ErrorHandler((error as Error).message, 500));
@@ -278,6 +284,8 @@ export const addAnswer = CatchAsyncErrors(
       const newAnswer: any = {
         user: req.user,
         answer,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // add the new answer to the question's questionReplies array
@@ -287,26 +295,27 @@ export const addAnswer = CatchAsyncErrors(
       await course?.save();
 
       if (req.user?._id === question.user._id) {
-        // create a notification
+        // create an in-app notification if the user answers their own question
         await NotificationModel.create({
           userId: req.user?._id.toString(),
           title: "New Answer",
           message: `${req.user?.name} has answered your question in the course ${courseContent?.title}`,
         });
-      } else {
+      } else if (req.user?.role === "admin") {
+        // CRITICAL FIX: Only send email notifications if the replier is an admin
         const data = {
           name: question.user.name,
           title: courseContent.title,
+          replyPreview: answer,
+          actionLink: `${process.env.FRONTEND_URL || "http://localhost:3000"}/course/${courseId}`,
+          websiteUrl: process.env.FRONTEND_URL || "http://localhost:3000",
         };
-        const html = await ejs.renderFile(
-          path.join(__dirname, "../mails/question-reply.ejs"),
-          data,
-        );
+
         try {
           await sendEmail({
             email: question.user.email,
             subject: "New reply to your question",
-            template: "question-reply.ejs",
+            template: "question-reply",
             data,
           });
         } catch (error) {
@@ -337,9 +346,9 @@ export const addReview = CatchAsyncErrors(
       const userCourseList = req.user?.courses;
       const courseId = req.params.id;
 
-      // check if the courseId already exists in the user's course list
+      // Check if course enrollment exists
       const courseExists = userCourseList?.some(
-        (course: any) => course._id.toString() === courseId,
+        (course: any) => course.courseId?.toString() === courseId,
       );
 
       if (!courseExists) {
@@ -349,27 +358,42 @@ export const addReview = CatchAsyncErrors(
       }
 
       const course = await CourseModel.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler("Course not found", 404));
+      }
+
       const { review, rating }: IAddReviewData = req.body;
+
       const reviewData: any = {
-        user: req.user,
+        user: {
+          _id: req.user?._id,
+          name: req.user?.name,
+          avatar: req.user?.avatar,
+          role: req.user?.role || "user",
+        },
         comment: review,
         rating,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
-      course?.reviews.push(reviewData);
+      course.reviews.push(reviewData);
+
+      // Recalculate average rating
       let avg = 0;
-      course?.reviews.forEach((review) => {
-        avg += review.rating;
+      course.reviews.forEach((rev: any) => {
+        avg += rev.rating;
       });
-      course!.ratings = avg / course!.reviews.length;
+      course.ratings = avg / course.reviews.length;
 
-      await course?.save();
+      await course.save();
 
-      const notification = {
-        title: "New Review",
-        message: `${req.user?.name} has added a new review for the course ${course?.name}`,
-      };
-      // create a notification for the admin
+      // FIX: Included the review comment inside the notification message body
+      await NotificationModel.create({
+        userId: req.user!._id.toString(),
+        title: "New Review Placed",
+        message: `${req.user?.name} left a ${rating}-star review on "${course?.name}": "${review}"`,
+      });
 
       res.status(200).json({
         success: true,
@@ -388,6 +412,7 @@ interface IAddReplyData {
   reviewId: string;
   courseId: string;
 }
+
 export const addReplyToReview = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -398,14 +423,18 @@ export const addReplyToReview = CatchAsyncErrors(
         return next(new ErrorHandler("Course not found", 404));
       }
 
-      const review = course.reviews.find((r) => r._id.toString() === reviewId);
+      const review = course.reviews.find(
+        (r: any) => r._id.toString() === reviewId,
+      );
       if (!review) {
         return next(new ErrorHandler("Review not found", 404));
       }
 
       const replyData: any = {
-        user: req.user,
+        user: req?.user, 
         comment,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       if (!review.commentReplies) {
@@ -413,7 +442,7 @@ export const addReplyToReview = CatchAsyncErrors(
       }
 
       review.commentReplies.push(replyData);
-      await course?.save();
+      await course.save();
 
       res.status(200).json({
         success: true,

@@ -12,6 +12,7 @@ interface IReview extends Document {
   rating: number;
   comment: string;
   commentReplies?: IComment[];
+
 }
 
 interface ILink extends Document {
@@ -65,7 +66,7 @@ const reviewSchema = new Schema<IReview>({
       type: Object,
     },
   ],
-});
+}, { timestamps: true },);
 
 const linkSchema = new Schema<ILink>({
   title: {

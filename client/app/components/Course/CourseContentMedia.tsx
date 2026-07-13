@@ -10,17 +10,20 @@ import {
   AiOutlineStar,
 } from "react-icons/ai";
 import { BiMessage, BiChevronDown, BiChevronUp } from "react-icons/bi";
-import { MdVerified } from "react-icons/md"; // Imported for the verified admin badge
+import { MdVerified } from "react-icons/md";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import {
   useAddAnswerInQuestionMutation,
   useAddNewQuestionMutation,
+  useAddReviewInCourseMutation,
+  useAddReplyInReviewMutation, // Added mutation hook for review replies
 } from "@/redux/features/courses/coursesApi";
 import { format } from "timeago.js";
 
 type Props = {
   data: any[];
+  reviews: any[];
   activeVideo: number;
   setActiveVideo: (activeVideo: number) => void;
   id: string;
@@ -35,6 +38,7 @@ const CourseContentMedia = ({
   id,
   user,
   refetch,
+  reviews,
 }: Props) => {
   const [activeBar, setActiveBar] = useState(0);
   const [question, setQuestion] = useState("");
@@ -42,6 +46,17 @@ const CourseContentMedia = ({
   const [reviewComment, setReviewComment] = useState("");
   const [answer, setAnswer] = useState("");
   const [answerId, setAnswerId] = useState("");
+
+  // New States for Review Replies
+  const [reviewReply, setReviewReply] = useState("");
+  const [reviewId, setReviewId] = useState("");
+  const [isReviewReplyActive, setIsReviewReplyActive] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [showReviewReplies, setShowReviewReplies] = useState<{
+    [key: string]: boolean;
+  }>({});
+  
 
   const [
     addAnswerInQuestion,
@@ -53,13 +68,28 @@ const CourseContentMedia = ({
   ] = useAddAnswerInQuestionMutation({});
   const [addNewQuestion, { isLoading, error, isSuccess }] =
     useAddNewQuestionMutation({});
+  const [addNewReview, { error: reviewError, isSuccess: isReviewSuccess }] =
+    useAddReviewInCourseMutation({});
+
+  // Added mutation execution hook for Review Replies
+  const [
+    addReplyInReview,
+    {
+      isLoading: isReviewReplyLoading,
+      error: reviewReplyError,
+      isSuccess: isReviewReplySuccess,
+    },
+  ] = useAddReplyInReviewMutation({});
 
   const isFirstVideo = activeVideo === 0;
   const isLastVideo = activeVideo === data?.length - 1;
 
-  const isReviewExists = Array.isArray(data)
-    ? false
-    : (data as any)?.reviews?.find((item: any) => item.user._id === user?._id);
+  const isReviewExists = Array.isArray(reviews)
+    ? reviews.some(
+        (item: any) =>
+          item?.user?._id === user?._id || item?.user === user?._id,
+      )
+    : false;
 
   const handleQuestionSubmit = () => {
     if (question.trim().length === 0) {
@@ -85,6 +115,18 @@ const CourseContentMedia = ({
         questionId: answerId,
       });
       setAnswer("");
+    }
+  };
+
+  const handleReviewReplySubmit = (rId: string) => {
+    if (reviewReply.trim().length === 0) {
+      toast.error("Reply cannot be empty");
+    } else {
+      addReplyInReview({
+        comment: reviewReply, 
+        courseId: id,
+        reviewId: rId,
+      });
     }
   };
 
@@ -114,12 +156,48 @@ const CourseContentMedia = ({
     }
   }, [isSuccess, error]);
 
-  const handleReviewSubmit = () => {
-    if (rating === 0 || reviewComment.trim().length === 0) return;
-    console.log("Submitted Review:", { rating, reviewComment });
-    setReviewComment("");
-    setRating(0);
+  const handleReviewSubmit = async () => {
+    if (rating === 0 || reviewComment.trim().length === 0) {
+      toast.error("Please provide a rating and a review comment.");
+      return;
+    } else {
+      addNewReview({
+        review: reviewComment,
+        rating,
+        courseId: id,
+      });
+      setReviewComment("");
+      setRating(0);
+    }
   };
+
+  useEffect(() => {
+    if (isReviewSuccess) {
+      toast.success("Review submitted successfully");
+      refetch();
+    }
+    if (reviewError) {
+      if ("data" in reviewError) {
+        const errorMessage = reviewError as any;
+        toast.error(`Error: ${errorMessage.data.message}`);
+      }
+    }
+  }, [isReviewSuccess, reviewError, refetch]);
+
+  useEffect(() => {
+    if (isReviewReplySuccess) {
+      toast.success("Reply submitted successfully");
+      setReviewReply("");
+      setIsReviewReplyActive({});
+      refetch();
+    }
+    if (reviewReplyError) {
+      if ("data" in reviewReplyError) {
+        const errorMessage = reviewReplyError as any;
+        toast.error(`Error: ${errorMessage.data.message}`);
+      }
+    }
+  }, [isReviewReplySuccess, reviewReplyError, refetch]);
 
   return (
     <div className="w-[95%] md:w-[92%] py-6 mx-auto min-h-screen text-black dark:text-white transition-colors duration-200">
@@ -341,6 +419,211 @@ const CourseContentMedia = ({
                 You have already shared your review feedback for this course.
               </p>
             )}
+
+            {/* Divider line before existing reviews */}
+            <div className="w-full h-[1px] bg-slate-200 dark:bg-slate-800 my-4" />
+
+            {/* Mapped Existing Reviews List */}
+            <div className="w-full flex flex-col gap-4">
+              {reviews &&
+                reviews.map((item: any, index: number) => {
+                  const reviewRepliesCount = item?.commentReplies?.length || 0;
+                  const hasMultipleReplies = reviewRepliesCount > 1;
+                  const showRepliesState =
+                    showReviewReplies[item._id] ?? reviewRepliesCount <= 1;
+
+                  return (
+                    <div
+                      key={index}
+                      className="p-4 rounded-lg bg-slate-500/5 border border-slate-100 dark:border-slate-800/40"
+                    >
+                      <div className="flex gap-3 items-start">
+                        {item?.user?.avatar?.url ? (
+                          <Image
+                            src={item.user.avatar.url}
+                            alt="User Avatar"
+                            width={40}
+                            height={40}
+                            className="w-[40px] h-[40px] rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                          />
+                        ) : (
+                          <div className="w-[40px] h-[40px] bg-slate-600 rounded-full flex items-center justify-center text-white shrink-0">
+                            <h1 className="uppercase text-[14px] font-semibold">
+                              {item?.user?.name
+                                ? item.user.name.slice(0, 2)
+                                : "UN"}
+                            </h1>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <h5 className="text-[15px] font-medium font-Poppins">
+                                {item?.user?.name || "Anonymous"}
+                              </h5>
+                              {item?.user?.role === "admin" && (
+                                <MdVerified
+                                  className="text-green-500"
+                                  size={15}
+                                />
+                              )}
+                            </div>
+                            {/* Star rendering for displaying reviews ratings */}
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span key={star}>
+                                  {item?.rating >= star ? (
+                                    <AiFillStar
+                                      size={16}
+                                      className="text-amber-400"
+                                    />
+                                  ) : (
+                                    <AiOutlineStar
+                                      size={16}
+                                      className="text-slate-300 dark:text-slate-600"
+                                    />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-sm mt-1 text-slate-700 dark:text-slate-300 font-Poppins">
+                            {item?.comment || item?.review}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <small className="text-slate-400 dark:text-slate-500 font-Poppins">
+                              {item?.createdAt
+                                ? format(item.createdAt)
+                                : "Just now"}
+                            </small>
+                            {/* Show reply toggle only if the logged-in user is an Admin */}
+                            {user?.role === "admin" && (
+                              <span
+                                className="text-xs text-sky-500 dark:text-sky-400 cursor-pointer font-medium flex items-center gap-1 hover:underline"
+                                onClick={() => {
+                                  setIsReviewReplyActive((prev) => ({
+                                    ...prev,
+                                    [item._id]: !prev[item._id],
+                                  }));
+                                  setReviewId(item._id);
+                                }}
+                              >
+                                <BiMessage size={14} /> Reply
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expandable Chevron for multiple replies */}
+                      {hasMultipleReplies && (
+                        <div className="pl-8 md:pl-12 mt-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowReviewReplies((prev) => ({
+                                ...prev,
+                                [item._id]: !showRepliesState,
+                              }))
+                            }
+                            className="flex items-center gap-1 text-xs font-Poppins font-medium text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
+                          >
+                            {showRepliesState ? (
+                              <>
+                                Hide Replies <BiChevronUp size={16} />
+                              </>
+                            ) : (
+                              <>
+                                Show {reviewRepliesCount} Replies{" "}
+                                <BiChevronDown size={16} />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Review Replies Listing */}
+                      {showRepliesState &&
+                        item?.commentReplies?.map(
+                          (reply: any, rIndex: number) => (
+                            <div
+                              key={rIndex}
+                              className="w-full flex gap-3 items-start pl-8 md:pl-12 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/50"
+                            >
+                              {reply?.user?.avatar?.url ? (
+                                <Image
+                                  src={reply.user.avatar.url}
+                                  alt="User Avatar"
+                                  width={32}
+                                  height={32}
+                                  className="w-[32px] h-[32px] rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-[32px] h-[32px] bg-slate-500 rounded-full flex items-center justify-center text-white shrink-0">
+                                  <h1 className="uppercase text-[11px] font-semibold">
+                                    {reply?.user?.name
+                                      ? reply.user.name.slice(0, 2)
+                                      : "AD"}
+                                  </h1>
+                                </div>
+                              )}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h5 className="text-sm font-medium font-Poppins">
+                                    {reply?.user?.name || "Admin"}
+                                  </h5>
+                                  {reply?.user?.role === "admin" && (
+                                    <MdVerified
+                                      className="text-green-500"
+                                      size={15}
+                                    />
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-700 dark:text-slate-300 font-Poppins mt-1">
+                                  {reply?.comment}
+                                </p>
+                                <small className="text-[10px] text-slate-400 dark:text-slate-500 font-Poppins">
+                                  {format(reply?.createdAt)}
+                                </small>
+                              </div>
+                            </div>
+                          ),
+                        )}
+
+                      {/* Admin Input Submission Bar */}
+                      {isReviewReplyActive[item._id] && (
+                        <div className="w-full flex gap-2 items-end mt-4 pl-8 md:pl-12">
+                          <input
+                            type="text"
+                            placeholder="Write your official response..."
+                            value={reviewReply}
+                            onChange={(e: any) =>
+                              setReviewReply(e.target.value)
+                            }
+                            className="w-full pb-1 text-sm font-Poppins bg-transparent border-b border-slate-200 dark:border-slate-700 text-black dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleReviewReplySubmit(item._id)}
+                            disabled={
+                              reviewReply.trim().length === 0 ||
+                              isReviewReplyLoading
+                            }
+                            className="bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-xs font-Poppins px-3 py-1.5 rounded transition-all whitespace-nowrap"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              {(!reviews || reviews.length === 0) && (
+                <p className="text-slate-400 font-Poppins text-sm text-center py-4">
+                  No reviews left for this course yet.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -348,6 +631,7 @@ const CourseContentMedia = ({
   );
 };
 
+// CommentReply and CommentItem remain exact same as previous
 const CommentReply = ({
   data,
   activeVideo,
@@ -382,10 +666,7 @@ const CommentItem = ({
   setAnswerId,
 }: any) => {
   const [replyActive, setReplyActive] = useState(false);
-
-  // Calculate if item has multiple replies
   const repliesCount = item?.questionReplies?.length || 0;
-  // If replies are > 1, hide them by default. Otherwise, default to true.
   const [showReplies, setShowReplies] = useState(repliesCount <= 1);
 
   return (
@@ -411,7 +692,6 @@ const CommentItem = ({
             <h5 className="text-[15px] font-medium font-Poppins">
               {item?.user?.name}
             </h5>
-          
           </div>
           <p className="text-sm mt-1 text-slate-700 dark:text-slate-300 font-Poppins">
             {item?.question}
@@ -433,7 +713,6 @@ const CommentItem = ({
         </div>
       </div>
 
-      {/* Conditionally Render Toggle Button for Multiple Replies */}
       {repliesCount > 1 && (
         <div className="pl-8 md:pl-12 mt-3">
           <button
@@ -454,7 +733,6 @@ const CommentItem = ({
         </div>
       )}
 
-      {/* Existing Replies Loop */}
       {showReplies &&
         item?.questionReplies?.map((reply: any, index: number) => (
           <div
@@ -481,7 +759,9 @@ const CommentItem = ({
                 <h5 className="text-sm font-medium font-Poppins">
                   {reply?.user?.name}
                 </h5>
+                {reply?.user?.role === "admin" && (
                   <MdVerified className="text-green-500" size={15} />
+                )}
               </div>
               <p className="text-xs text-slate-700 dark:text-slate-300 font-Poppins mt-1">
                 {reply?.answer}
@@ -493,7 +773,6 @@ const CommentItem = ({
           </div>
         ))}
 
-      {/* Answer Input Area Toggle */}
       {replyActive && (
         <div className="w-full flex gap-2 items-end mt-4 pl-8 md:pl-12">
           <input

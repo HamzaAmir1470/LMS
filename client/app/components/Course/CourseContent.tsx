@@ -22,7 +22,7 @@ const CourseContent = ({ id, user }: Props) => {
   const [activeVideo, setActiveVideo] = useState(0);
   const [open, setOpen] = useState(false);
   const [route, setRoute] = useState("Login");
-
+  
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {isLoading ? (
@@ -42,11 +42,13 @@ const CourseContent = ({ id, user }: Props) => {
             <div className="col-span-1 800px:col-span-7">
               <CourseContentMedia
                 data={data}
+                reviews={contentData?.course?.reviews}
                 id={id}
                 activeVideo={activeVideo}
                 setActiveVideo={setActiveVideo}
                 user={user}
                 refetch={refetch}
+                courseId={id}
               />
             </div>
 
