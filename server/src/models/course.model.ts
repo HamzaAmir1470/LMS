@@ -76,19 +76,22 @@ const linkSchema = new Schema<ILink>({
   },
 });
 
-const commentSchema = new Schema<IComment>({
-  user: {
-    type: Object,
-  },
-  question: {
-    type: String,
-  },
-  questionReplies: [
-    {
+const commentSchema = new Schema<IComment>(
+  {
+    user: {
       type: Object,
     },
-  ],
-});
+    question: {
+      type: String,
+    },
+    questionReplies: [
+      {
+        type: Object,
+      },
+    ],
+  },
+  { timestamps: true },
+);
 
 const courseDataSchema = new Schema<ICourseData>({
   title: {
