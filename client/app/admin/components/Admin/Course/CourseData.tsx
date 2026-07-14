@@ -9,9 +9,7 @@ type Props = {
   benefits: { title: string }[];
   setBenefits: (benefits: { title: string }[]) => void;
   prerequisites: { title: string }[];
-  setPrerequisites: {
-    prerequisites: (prerequisites: { title: string }[]) => void;
-  };
+  setPrerequisites: (prerequisites: { title: string }[]) => void;
   active: number;
   setActive: (active: number) => void;
 };

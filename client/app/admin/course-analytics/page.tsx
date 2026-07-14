@@ -5,7 +5,7 @@ import DashboardHeader from "../components/Admin/DashboardHeader";
 
 type Props = {};
 
-const page = (props) => {
+const page = () => {
   return (
     <div>
       <DashboardHeader />

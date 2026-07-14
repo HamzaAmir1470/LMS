@@ -15,6 +15,8 @@ import toast from "react-hot-toast";
 
 type Props = {
   setRoute: (route: string) => void;
+  setOpen: (open: boolean) => void;
+  refetch?: any;
 };
 
 const schema = Yup.object().shape({

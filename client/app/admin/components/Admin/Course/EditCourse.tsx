@@ -57,6 +57,7 @@ const EditCourse: FC<Props> = ({ id }) => {
         },
       ],
       suggestion: "",
+      categories: "",
     },
   ]);
   const [courseData, setCourseData] = React.useState<any>({});

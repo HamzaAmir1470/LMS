@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useGetUsersAllCoursesQuery } from "@/redux/features/courses/coursesApi";
 import { useGetHeroDataQuery } from "@/redux/features/layout/layoutApi";
@@ -10,7 +10,7 @@ import CourseCard from "../components/Course/CourseCard";
 import Footer from "../components/Route/Footer";
 type Props = {};
 
-const Page = (props: Props) => {
+const CoursesPageContent = () => {
   const searchParams = useSearchParams();
   const search = searchParams?.get("title");
   const { data, isLoading, isError } = useGetUsersAllCoursesQuery(
@@ -101,6 +101,14 @@ const Page = (props: Props) => {
         </div>
       )}
     </div>
+  );
+};
+
+const Page = (props: Props) => {
+  return (
+    <Suspense fallback={<Loader />}>
+      <CoursesPageContent />
+    </Suspense>
   );
 };
 

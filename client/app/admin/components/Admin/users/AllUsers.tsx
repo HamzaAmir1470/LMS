@@ -191,7 +191,7 @@ const AllUsers: FC<Props> = ({ isTeam }) => {
       {isLoading ? (
         <Loader />
       ) : (
-        <Box m="0 auto" className="max-w-[98%]">
+        <Box sx={{ mx: "auto" }} className="max-w-[98%]">
           <div className="w-full flex justify-end mb-5">
             <div
               className={`${styles.button} !mt-0 !w-[200px] dark:bg-[#57c7a3] h-35px! dark:border dark:border-[#ffffff6c] cursor-pointer`}
@@ -201,9 +201,9 @@ const AllUsers: FC<Props> = ({ isTeam }) => {
             </div>
           </div>
           <Box
-            m="40px 0 0 0"
-            height="80vh"
             sx={{
+              mt: "40px",
+              height: "80vh",
               "& .MuiDataGrid-root": { border: "none", outline: "none" },
               "& .MuiSvgIcon-root": {
                 color: theme === "dark" ? "#fff !important" : "#000 !important",
@@ -362,37 +362,39 @@ const AllUsers: FC<Props> = ({ isTeam }) => {
                       },
                     }}
                     MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          backgroundColor:
-                            theme === "dark"
-                              ? "#1e293b !important"
-                              : "#fff !important",
-                          border:
-                            theme === "dark"
-                              ? "1px solid #ffffff15"
-                              : "1px solid #e2e8f0",
-                          "& .MuiMenuItem-root": {
-                            color:
+                      slotProps: {
+                        paper: {
+                          sx: {
+                            backgroundColor:
                               theme === "dark"
-                                ? "#fff !important"
-                                : "#000 !important",
-                            "&:hover": {
-                              backgroundColor:
+                                ? "#1e293b !important"
+                                : "#fff !important",
+                            border:
+                              theme === "dark"
+                                ? "1px solid #ffffff15"
+                                : "1px solid #e2e8f0",
+                            "& .MuiMenuItem-root": {
+                              color:
                                 theme === "dark"
-                                  ? "#334155 !important"
-                                  : "#f1f5f9 !important",
-                            },
-                            "&.Mui-selected": {
-                              backgroundColor:
-                                theme === "dark"
-                                  ? "#475569 !important"
-                                  : "#e2e8f0 !important",
+                                  ? "#fff !important"
+                                  : "#000 !important",
                               "&:hover": {
                                 backgroundColor:
                                   theme === "dark"
-                                    ? "#64748b !important"
-                                    : "#cbd5e1 !important",
+                                    ? "#334155 !important"
+                                    : "#f1f5f9 !important",
+                              },
+                              "&.Mui-selected": {
+                                backgroundColor:
+                                  theme === "dark"
+                                    ? "#475569 !important"
+                                    : "#e2e8f0 !important",
+                                "&:hover": {
+                                  backgroundColor:
+                                    theme === "dark"
+                                      ? "#64748b !important"
+                                      : "#cbd5e1 !important",
+                                },
                               },
                             },
                           },

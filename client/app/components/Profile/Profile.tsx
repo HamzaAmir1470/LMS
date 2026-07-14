@@ -97,7 +97,6 @@ const Profile: React.FC<Props> = ({ user }) => {
                 <CourseCard
                   key={item?._id || index}
                   item={item}
-                  user={user}
                   isProfile={true}
                 />
               ))}

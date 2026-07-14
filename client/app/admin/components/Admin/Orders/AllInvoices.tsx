@@ -116,11 +116,11 @@ const AllInvoices = ({ isDashboard }: Props) => {
       {globalLoading ? (
         <Loader />
       ) : (
-        <Box m="0 auto" className="w-full">
+        <Box sx={{ mx: "auto" }} className="w-full">
           <Box
-            m={isDashboard ? "0" : "40px 0 0 0"}
-            height={isDashboard ? "100%" : "80vh"}
             sx={{
+              mt: isDashboard ? "0" : "40px",
+              height: isDashboard ? "100%" : "80vh",
               "& .MuiDataGrid-root": { 
                 border: "none", 
                 outline: "none",
@@ -203,7 +203,7 @@ const AllInvoices = ({ isDashboard }: Props) => {
               disableRowSelectionOnClick
               hideFooter={isDashboard} // Completely removes pagination space on Dashboard
               rowHeight={isDashboard ? 42 : 52} // Shorter heights to fit exactly in quadrant boundaries
-              headerHeight={isDashboard ? 40 : 56}
+              columnHeaderHeight={isDashboard ? 40 : 56}
             />
           </Box>
         </Box>

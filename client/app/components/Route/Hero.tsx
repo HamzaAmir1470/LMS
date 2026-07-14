@@ -12,7 +12,7 @@ const Hero: FC = () => {
   const [search, setSearch] = React.useState("");
   const router = useRouter();
 
-  const handleSearch = (e) => {
+  const handleSearch = () => {
     if (search === "") return;
     router.push(`/courses?title=${search}`);
   };

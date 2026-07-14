@@ -17,7 +17,7 @@ import { signIn } from "next-auth/react";
 type Props = {
   setRoute: (route: string) => void;
   setOpen: (open: boolean) => void;
-  refetch: any;
+  refetch?: any;
 };
 
 const schema = Yup.object().shape({

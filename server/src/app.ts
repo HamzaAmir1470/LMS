@@ -10,7 +10,16 @@ import NotificationRouter from "./routes/notification.route.js";
 import layoutRouter from "./routes/layout.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 import ErrorHandler from "./utils/ErrorHandler.js";
+import { rateLimit } from "express-rate-limit";
 export const app = express();
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+});
 
 app.use(
   cors({
@@ -44,5 +53,7 @@ app.get("/test", (req: Request, res: Response) => {
 app.use((req: Request, res: Response, next: NextFunction) => {
   next(new ErrorHandler(`Route ${req.originalUrl} not found`, 404));
 });
+
+app.use(limiter);
 
 app.use(ErrorMiddleware);

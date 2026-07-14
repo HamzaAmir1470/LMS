@@ -4,7 +4,7 @@ import {
   useUpdateNotificationStatusMutation,
 } from "@/redux/features/notifications/notificationApi";
 import ThemeSwitcher from "../../../utils/ThemeSwitcher";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { format } from "timeago.js";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import SocketIO from "socket.io-client";
@@ -27,14 +27,18 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
 
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  const [audio] = useState(
-    new Audio(
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    audioRef.current = new Audio(
       "https://res.cloudinary.com/hamzacloud/video/upload/v1784022679/Notification_sound_csfguq.mp3",
-    ),
-  );
+    );
+  }, []);
 
   const playerNotificationSound = () => {
-    audio.play();
+    audioRef.current?.play();
   };
 
   useEffect(() => {
@@ -46,8 +50,8 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
     if (isSuccess) {
       refetch();
     }
-    audio.load();
-  }, [data, isSuccess, refetch, audio]);
+    audioRef.current?.load();
+  }, [data, isSuccess, refetch]);
 
   useEffect(() => {
     socket.on("newNotification", (notification) => {

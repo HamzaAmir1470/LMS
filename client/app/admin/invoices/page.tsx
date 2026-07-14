@@ -5,7 +5,7 @@ import AdminSidebar from "../components/Admin/Sidebar/AdminSidebar";
 
 type Props = {};
 
-const page = (props) => {
+const page = () => {
   return (
     <div>
       <DashboardHeader />

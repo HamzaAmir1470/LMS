@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 
 type Props = {};
 
-const ChangePassword = (props) => {
+const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");

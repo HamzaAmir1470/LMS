@@ -116,8 +116,8 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                   <Link href="/profile" className="flex items-center">
                     <Image
                       src={
-                        userData?.avatar?.url?.trim()
-                          ? userData.avatar.url
+                        userData?.user?.avatar
+                          ? userData.user.avatar.url
                           : defaultAvatar
                       }
                       alt="User Avatar"

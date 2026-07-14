@@ -48,7 +48,6 @@ const CourseContent = ({ id, user }: Props) => {
                 setActiveVideo={setActiveVideo}
                 user={user}
                 refetch={refetch}
-                courseId={id}
               />
             </div>
 
@@ -57,7 +56,7 @@ const CourseContent = ({ id, user }: Props) => {
               <CourseContentList
                 setActiveVideo={setActiveVideo}
                 data={data}
-                activeVideo={activeVideo}
+                isActiveVideo={activeVideo}
               />
             </div>
           </div>
