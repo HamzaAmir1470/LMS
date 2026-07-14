@@ -29,45 +29,58 @@ const AllInvoices = ({ isDashboard }: Props) => {
     refetchOnMountOrArgChange: true,
   });
 
-  // Combine loading states
   const globalLoading = ordersLoading || usersLoading || coursesLoading;
 
   // --- DYNAMIC ROWS PROCESSING ---
   const rows = useMemo(() => {
     if (!ordersData?.orders) return [];
 
-    return ordersData.orders.map((order: any, index: number) => {
-      // Find corresponding user and course details dynamically
+    // Slice to the top 5 transactions if on the dashboard to save space
+    const targetOrders = isDashboard 
+      ? ordersData.orders.slice(0, 5) 
+      : ordersData.orders;
+
+    return targetOrders.map((order: any, index: number) => {
       const user = usersData?.users?.find((u: any) => u._id === order.userId);
       const course = coursesData?.courses?.find((c: any) => c._id === order.courseId);
 
       return {
         id: order._id || `inv-${index}`,
-        _id: order._id,
+        _id: order._id ? `...${order._id.slice(-6)}` : `...${index}`, // Compact ID for dashboard space
         userName: user?.name || "Unknown User",
         userEmail: user?.email || "N/A",
         courseName: course?.name || "Unknown Course",
         price: order.payment_info?.amount 
-          ? `$${(order.payment_info.amount / 100).toFixed(2)}`
+          ? `$${(order.payment_info.amount / 100).toFixed(0)}` // Round prices to prevent wrapping
           : `$${order.price || 0}`,
         createdAt: order.createdAt ? format(order.createdAt) : "N/A",
       };
     });
-  }, [ordersData, usersData, coursesData]);
+  }, [ordersData, usersData, coursesData, isDashboard]);
 
   // --- COLUMNS DEFINITION ---
   const columns = useMemo(() => {
     const baseColumns = [
-      { field: "_id", headerName: "ID", flex: isDashboard ? 0.35 : 0.3 },
-      { field: "userName", headerName: "Name", flex: 0.5 },
+      { 
+        field: "_id", 
+        headerName: "ID", 
+        flex: isDashboard ? 0.35 : 0.3,
+        minWidth: isDashboard ? 70 : 100 
+      },
+      { 
+        field: "userName", 
+        headerName: "Name", 
+        flex: 0.5,
+        minWidth: 100
+      },
     ];
 
     const fullColumns = [
       ...baseColumns,
-      { field: "userEmail", headerName: "Email", flex: 0.7 },
-      { field: "courseName", headerName: "Course Title", flex: 0.5 },
-      { field: "price", headerName: "Price", flex: 0.3 },
-      { field: "createdAt", headerName: "Created At", flex: 0.3 },
+      { field: "userEmail", headerName: "Email", flex: 0.7, minWidth: 150 },
+      { field: "courseName", headerName: "Course Title", flex: 0.5, minWidth: 130 },
+      { field: "price", headerName: "Price", flex: 0.3, minWidth: 80 },
+      { field: "createdAt", headerName: "Created At", flex: 0.3, minWidth: 100 },
       {
         field: "mail",
         headerName: "Email",
@@ -91,24 +104,28 @@ const AllInvoices = ({ isDashboard }: Props) => {
 
     const dashboardColumns = [
       ...baseColumns,
-      { field: "price", headerName: "Price", flex: 0.2 },
-      { field: "createdAt", headerName: "Created At", flex: 0.3 },
+      { field: "price", headerName: "Price", flex: 0.25, minWidth: 60 },
+      { field: "createdAt", headerName: "Created At", flex: 0.4, minWidth: 90 },
     ];
 
     return isDashboard ? dashboardColumns : fullColumns;
   }, [isDashboard]);
 
   return (
-    <div className={`w-full ${isDashboard ? '' : 'md:pl-[20px] pr-[20px] mt-[120px] overflow-x-hidden'}`}>
+    <div className={`w-full ${isDashboard ? "h-full" : "md:pl-[20px] pr-[20px] mt-[120px] overflow-x-hidden"}`}>
       {globalLoading ? (
         <Loader />
       ) : (
-        <Box m="0 auto" className={isDashboard ? 'w-full' : 'max-w-[98%]'}>
+        <Box m="0 auto" className="w-full">
           <Box
             m={isDashboard ? "0" : "40px 0 0 0"}
-            height={isDashboard ? "350px" : "80vh"}
+            height={isDashboard ? "100%" : "80vh"}
             sx={{
-              "& .MuiDataGrid-root": { border: "none", outline: "none" },
+              "& .MuiDataGrid-root": { 
+                border: "none", 
+                outline: "none",
+                fontSize: isDashboard ? "12px" : "14px" // Cleaner font sizing inside widgets
+              },
               "& .MuiSvgIcon-root": {
                 color: theme === "dark" ? "#fff !important" : "#000 !important",
               },
@@ -143,11 +160,13 @@ const AllInvoices = ({ isDashboard }: Props) => {
               },
               "& .MuiTablePagination-root": {
                 color: theme === "dark" ? "#fff" : "#000",
+                display: isDashboard ? "none !important" : "flex", // Hide footers on Dashboard
               },
               "& .MuiDataGrid-cell": {
                 borderBottom: "none",
                 display: "flex",
                 alignItems: "center",
+                padding: isDashboard ? "4px 8px" : "8px 16px",
               },
               "& .MuiDataGrid-columnHeaders, & .MuiDataGrid-columnHeaderRow": {
                 backgroundColor:
@@ -170,6 +189,7 @@ const AllInvoices = ({ isDashboard }: Props) => {
               "& .MuiDataGrid-footerContainer": {
                 borderTop: "none",
                 backgroundColor: theme === "dark" ? "#3e4396" : "#2190ff",
+                display: isDashboard ? "none !important" : "flex", // Clean container cut-off
               },
               "& .MuiCheckbox-root": {
                 color: `${theme === "dark" ? "#fff" : "#000"} !important`,
@@ -181,6 +201,9 @@ const AllInvoices = ({ isDashboard }: Props) => {
               rows={rows}
               columns={columns}
               disableRowSelectionOnClick
+              hideFooter={isDashboard} // Completely removes pagination space on Dashboard
+              rowHeight={isDashboard ? 42 : 52} // Shorter heights to fit exactly in quadrant boundaries
+              headerHeight={isDashboard ? 40 : 56}
             />
           </Box>
         </Box>

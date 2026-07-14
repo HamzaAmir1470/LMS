@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Profile from "../components/Profile/Profile";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import Footer from "../components/Route/Footer";
 
 type Props = {};
 
@@ -16,7 +17,7 @@ const Page: FC<Props> = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   return (
-    <div className="profile-page">
+    <div className="profile-page min-h-screen:">
       <Protected>
         <Header
           open={open}
@@ -26,6 +27,7 @@ const Page: FC<Props> = () => {
           route={route}
         />
         <Profile user={user} />
+        <Footer />
       </Protected>
     </div>
   );
