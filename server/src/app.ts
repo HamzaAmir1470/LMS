@@ -11,6 +11,8 @@ import layoutRouter from "./routes/layout.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 import ErrorHandler from "./utils/ErrorHandler.js";
 import { rateLimit } from "express-rate-limit";
+
+// Define app instance locally
 const app = express();
 
 const allowedOrigins = (
@@ -59,13 +61,17 @@ app.use(
   layoutRouter,
 );
 
+// Root route handler (Prevents 404 on base URL)
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({ success: true, message: "LMS Backend API is running!" });
+});
+
 // Testing API
 app.get("/test", (req: Request, res: Response) => {
   res.status(200).json({ message: "API is working!" });
 });
 
 // Unknown route handler
-
 app.use((req: Request, res: Response, next: NextFunction) => {
   next(new ErrorHandler(`Route ${req.originalUrl} not found`, 404));
 });
@@ -74,5 +80,8 @@ app.use(limiter);
 
 app.use(ErrorMiddleware);
 
+// Named export to keep compatibility with servers/sockets importing { app }
+export { app };
 
+// Default export for Vercel's Serverless handler
 export default app;
