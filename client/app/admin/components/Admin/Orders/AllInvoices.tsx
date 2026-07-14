@@ -19,15 +19,22 @@ const AllInvoices = ({ isDashboard }: Props) => {
   const { theme } = useTheme();
 
   // --- API QUERIES ---
-  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
-  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
-  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: ordersData, isLoading: ordersLoading } = useGetAllOrdersQuery(
+    undefined,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const { data: usersData, isLoading: usersLoading } = useGetAllUsersQuery(
+    undefined,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const { data: coursesData, isLoading: coursesLoading } =
+    useGetAllCoursesQuery(undefined, {
+      refetchOnMountOrArgChange: true,
+    });
 
   const globalLoading = ordersLoading || usersLoading || coursesLoading;
 
@@ -36,13 +43,15 @@ const AllInvoices = ({ isDashboard }: Props) => {
     if (!ordersData?.orders) return [];
 
     // Slice to the top 5 transactions if on the dashboard to save space
-    const targetOrders = isDashboard 
-      ? ordersData.orders.slice(0, 5) 
+    const targetOrders = isDashboard
+      ? ordersData.orders.slice(0, 5)
       : ordersData.orders;
 
     return targetOrders.map((order: any, index: number) => {
       const user = usersData?.users?.find((u: any) => u._id === order.userId);
-      const course = coursesData?.courses?.find((c: any) => c._id === order.courseId);
+      const course = coursesData?.courses?.find(
+        (c: any) => c._id === order.courseId,
+      );
 
       return {
         id: order._id || `inv-${index}`,
@@ -50,7 +59,7 @@ const AllInvoices = ({ isDashboard }: Props) => {
         userName: user?.name || "Unknown User",
         userEmail: user?.email || "N/A",
         courseName: course?.name || "Unknown Course",
-        price: order.payment_info?.amount 
+        price: order.payment_info?.amount
           ? `$${(order.payment_info.amount / 100).toFixed(0)}` // Round prices to prevent wrapping
           : `$${order.price || 0}`,
         createdAt: order.createdAt ? format(order.createdAt) : "N/A",
@@ -61,26 +70,36 @@ const AllInvoices = ({ isDashboard }: Props) => {
   // --- COLUMNS DEFINITION ---
   const columns = useMemo(() => {
     const baseColumns = [
-      { 
-        field: "_id", 
-        headerName: "ID", 
+      {
+        field: "_id",
+        headerName: "ID",
         flex: isDashboard ? 0.35 : 0.3,
-        minWidth: isDashboard ? 70 : 100 
+        minWidth: isDashboard ? 70 : 100,
       },
-      { 
-        field: "userName", 
-        headerName: "Name", 
+      {
+        field: "userName",
+        headerName: "Name",
         flex: 0.5,
-        minWidth: 100
+        minWidth: 100,
       },
     ];
 
     const fullColumns = [
       ...baseColumns,
       { field: "userEmail", headerName: "Email", flex: 0.7, minWidth: 150 },
-      { field: "courseName", headerName: "Course Title", flex: 0.5, minWidth: 130 },
+      {
+        field: "courseName",
+        headerName: "Course Title",
+        flex: 0.5,
+        minWidth: 130,
+      },
       { field: "price", headerName: "Price", flex: 0.3, minWidth: 80 },
-      { field: "createdAt", headerName: "Created At", flex: 0.3, minWidth: 100 },
+      {
+        field: "createdAt",
+        headerName: "Created At",
+        flex: 0.3,
+        minWidth: 100,
+      },
       {
         field: "mail",
         headerName: "Email",
@@ -90,7 +109,10 @@ const AllInvoices = ({ isDashboard }: Props) => {
         renderCell: (params: any) => {
           return (
             <Box className="flex items-center justify-center h-full w-full">
-              <a href={`mailto:${params.row.userEmail}`} className="min-w-0 p-2">
+              <a
+                href={`mailto:${params.row.userEmail}`}
+                className="min-w-0 p-2"
+              >
                 <AiOutlineMail
                   size={20}
                   className="dark:text-white text-black hover:text-green-500 transition-colors"
@@ -112,7 +134,9 @@ const AllInvoices = ({ isDashboard }: Props) => {
   }, [isDashboard]);
 
   return (
-    <div className={`w-full ${isDashboard ? "h-full" : "md:pl-[20px] pr-[20px] mt-[120px] overflow-x-hidden"}`}>
+    <div
+      className={`w-full ${isDashboard ? "h-full" : "md:pl-[20px] pr-[20px] mt-[120px] overflow-x-hidden"}`}
+    >
       {globalLoading ? (
         <Loader />
       ) : (
@@ -121,10 +145,10 @@ const AllInvoices = ({ isDashboard }: Props) => {
             sx={{
               mt: isDashboard ? "0" : "40px",
               height: isDashboard ? "100%" : "80vh",
-              "& .MuiDataGrid-root": { 
-                border: "none", 
+              "& .MuiDataGrid-root": {
+                border: "none",
                 outline: "none",
-                fontSize: isDashboard ? "12px" : "14px" // Cleaner font sizing inside widgets
+                fontSize: isDashboard ? "12px" : "14px", // Cleaner font sizing inside widgets
               },
               "& .MuiSvgIcon-root": {
                 color: theme === "dark" ? "#fff !important" : "#000 !important",

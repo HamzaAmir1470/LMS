@@ -42,7 +42,6 @@ const CourseData: FC<Props> = ({
     setPrerequisites([...prerequisites, { title: "" }]);
   };
 
-
   const prevButton = () => {
     setActive(active - 1);
   };

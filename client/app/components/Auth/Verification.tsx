@@ -66,7 +66,6 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
       activation_token: token,
       activation_code: verificationNumber,
     });
-  
   };
 
   const handleInputChange = (index: number, value: string) => {

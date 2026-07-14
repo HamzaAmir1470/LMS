@@ -19,32 +19,32 @@ const ChangePassword = () => {
       toast.error("Passwords do not match");
       setError("Passwords do not match");
     } else {
-        if(oldPassword !== newPassword && newPassword === confirmPassword) {
-          await updatePassword({ oldPassword, newPassword });
-        } else {
-            toast.error("New password cannot be the same as old password");
-        }
+      if (oldPassword !== newPassword && newPassword === confirmPassword) {
+        await updatePassword({ oldPassword, newPassword });
+      } else {
+        toast.error("New password cannot be the same as old password");
+      }
     }
     setError("");
   };
 
- useEffect(() => {
-  if (isSuccess) {
-    toast.success("Password updated successfully")
-    setOldPassword("")
-    setNewPassword("")
-    setConfirmPassword("")
-  }
-
-  if (errorData) {
-    if ("status" in errorData) {
-      const err = errorData.data as { message?: string };
-      toast.error(err.message || "Something went wrong");
-    } else {
-      toast.error(errorData.message || "Something went wrong");
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Password updated successfully");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     }
-  }
-}, [isSuccess, errorData]);
+
+    if (errorData) {
+      if ("status" in errorData) {
+        const err = errorData.data as { message?: string };
+        toast.error(err.message || "Something went wrong");
+      } else {
+        toast.error(errorData.message || "Something went wrong");
+      }
+    }
+  }, [isSuccess, errorData]);
 
   return (
     <div className="w-full h-full px-4 md:px-5">

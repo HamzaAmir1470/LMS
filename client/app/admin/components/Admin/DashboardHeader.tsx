@@ -16,7 +16,6 @@ type Props = {
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-
 const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
   const { data, refetch } = useGetAllNotificationsQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -111,9 +110,7 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
                   </p>
                   <p
                     className="text-[#3ccba0] hover:underline cursor-pointer text-[13px] font-semibold"
-                    onClick={() =>
-                      handleNotificationStatusChange(item._id)
-                    }
+                    onClick={() => handleNotificationStatusChange(item._id)}
                   >
                     Mark as read
                   </p>

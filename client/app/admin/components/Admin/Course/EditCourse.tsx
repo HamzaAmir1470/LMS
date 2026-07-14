@@ -37,7 +37,7 @@ const EditCourse: FC<Props> = ({ id }) => {
     tags: "",
     level: "",
     demoUrl: "",
-    thumbnail: "", 
+    thumbnail: "",
     categories: "",
   });
 
@@ -77,7 +77,7 @@ const EditCourse: FC<Props> = ({ id }) => {
         tags: editCourseData.tags || "",
         level: editCourseData.level || "",
         demoUrl: editCourseData.demoUrl || "",
-        thumbnail: currentThumbnailUrl, 
+        thumbnail: currentThumbnailUrl,
         categories: editCourseData.categories || "",
       });
 
@@ -101,7 +101,7 @@ const EditCourse: FC<Props> = ({ id }) => {
 
   useEffect(() => {
     if (isSuccess) {
-      refetch(); 
+      refetch();
       toast.success("Course changes updated successfully");
       router.push("/admin/courses");
     }
@@ -131,7 +131,7 @@ const EditCourse: FC<Props> = ({ id }) => {
       title: content.title,
       description: content.description,
       videoSection: content.videoSection,
-      videoLength: Number(content.videoLength) || 0, 
+      videoLength: Number(content.videoLength) || 0,
       links: content.links.map((item) => ({
         title: item.title,
         url: item.url,
@@ -173,7 +173,8 @@ const EditCourse: FC<Props> = ({ id }) => {
 
   const handleCourseCreate = async () => {
     // FIXED: Use the courseData variable that has been updated via preview or fall back to a freshly prepared payload
-    const payloadData = Object.keys(courseData).length > 0 ? courseData : prepareCoursePayload();
+    const payloadData =
+      Object.keys(courseData).length > 0 ? courseData : prepareCoursePayload();
 
     if (!editCourseData?._id) {
       toast.error("Course reference ID is missing.");

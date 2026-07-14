@@ -22,7 +22,7 @@ const CourseContent = ({ id, user }: Props) => {
   const [activeVideo, setActiveVideo] = useState(0);
   const [open, setOpen] = useState(false);
   const [route, setRoute] = useState("Login");
-  
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {isLoading ? (

@@ -19,12 +19,15 @@ type Props = {};
 
 const AllCourses = (props: Props) => {
   const { theme } = useTheme();
-  const { data, isLoading, refetch } = useGetAllCoursesQuery({}, { refetchOnMountOrArgChange: true });
+  const { data, isLoading, refetch } = useGetAllCoursesQuery(
+    {},
+    { refetchOnMountOrArgChange: true },
+  );
   const [open, setOpen] = React.useState(false);
   const [courseId, setCourseId] = React.useState("");
   const [deleteCourse, { isSuccess, error }] = useDeleteCourseMutation();
 
-  useEffect(() => { 
+  useEffect(() => {
     if (isSuccess) {
       refetch();
       toast.success("Course deleted successfully");
@@ -62,12 +65,15 @@ const AllCourses = (props: Props) => {
       renderCell: (params: any) => {
         return (
           <Box className="flex items-center justify-center h-full w-full">
-            <Link href={`/admin/edit-course/${params.row.id}`} className="min-w-0 p-2">
+            <Link
+              href={`/admin/edit-course/${params.row.id}`}
+              className="min-w-0 p-2"
+            >
               <FiEdit2
                 size={20}
                 className="dark:text-white text-black hover:text-green-500 transition-colors"
               />
-            </Link> 
+            </Link>
           </Box>
         );
       },
