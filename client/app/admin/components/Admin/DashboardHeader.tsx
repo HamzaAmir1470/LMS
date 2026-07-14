@@ -9,7 +9,10 @@ import { format } from "timeago.js";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import SocketIO from "socket.io-client";
 const ENDPOINT = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000";
-const socket = SocketIO(ENDPOINT, { transports: ["websocket"] });
+const isSocketEnabled = process.env.NEXT_PUBLIC_ENABLE_SOCKET === "true";
+const socket = isSocketEnabled
+  ? SocketIO(ENDPOINT, { transports: ["websocket"] })
+  : null;
 
 type Props = {
   open?: boolean;
@@ -53,7 +56,7 @@ const DashboardHeader: FC<Props> = ({ open, setOpen }) => {
   }, [data, isSuccess, refetch]);
 
   useEffect(() => {
-    socket.on("newNotification", (notification) => {
+    socket?.on("newNotification", (notification) => {
       refetch();
       playerNotificationSound();
     });

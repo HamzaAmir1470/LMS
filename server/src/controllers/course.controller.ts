@@ -70,7 +70,7 @@ export const editCourse = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
-      const courseId = req.params.id;
+      const courseId = String(req.params.id);
 
       const course = await CourseModel.findById(courseId);
 
@@ -85,8 +85,12 @@ export const editCourse = CatchAsyncErrors(
         data.thumbnail.startsWith("data:")
       ) {
         // Delete old Cloudinary image
-        if (course.thumbnail?.public_id) {
-          await cloudinary.v2.uploader.destroy(course.thumbnail.public_id);
+        const currentThumbnail = course.thumbnail as
+          | { public_id?: string }
+          | undefined;
+
+        if (currentThumbnail?.public_id) {
+          await cloudinary.v2.uploader.destroy(currentThumbnail.public_id);
         }
 
         // Upload new image
@@ -137,7 +141,7 @@ export const editCourse = CatchAsyncErrors(
 export const getSingleCourse = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const courseId = req.params.id;
+      const courseId = String(req.params.id);
 
       const isCachExist = await redis.get(`course:${courseId}`);
       if (isCachExist) {
@@ -193,7 +197,7 @@ export const getCourseByUser = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userCourseList = req.user?.courses;
-      const courseId = req.params.id;
+      const courseId = String(req.params.id);
 
       const courseExists = userCourseList?.find(
         (course: any) => course.courseId.toString() === courseId,
@@ -384,7 +388,7 @@ export const addReview = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userCourseList = req.user?.courses;
-      const courseId = req.params.id;
+      const courseId = String(req.params.id);
 
       // Check if course enrollment exists
       const courseExists = userCourseList?.some(
@@ -516,7 +520,7 @@ export const getAllCoursesAdmin = CatchAsyncErrors(
 export const deleteCourse = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const courseId = req.params.id;
+      const courseId = String(req.params.id);
       const course = await CourseModel.findById(courseId);
 
       if (!course) {

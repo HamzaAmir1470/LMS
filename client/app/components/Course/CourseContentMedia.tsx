@@ -24,7 +24,10 @@ import socketIO from "socket.io-client";
 import { title } from "process";
 const ENDPOINT =
   process.env.NEXT_PUBLIC_SOCKET_ENDPOINT || "http://localhost:8000";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+const isSocketEnabled = process.env.NEXT_PUBLIC_ENABLE_SOCKET === "true";
+const socketId = isSocketEnabled
+  ? socketIO(ENDPOINT, { transports: ["websocket"] })
+  : null;
 
 type Props = {
   data: any[];
@@ -139,7 +142,7 @@ const CourseContentMedia = ({
       toast.success("Answer submitted successfully");
       refetch();
       if (user.role !== "admin") {
-        socketId.emit("notification", {
+        socketId?.emit("notification", {
           title: "New reply received",
           message: `You have a new question reply in ${data[activeVideo]?.title}`,
           userId: user._id,
@@ -158,7 +161,7 @@ const CourseContentMedia = ({
     if (isSuccess) {
       toast.success("Question submitted successfully");
       refetch();
-      socketId.emit("notification", {
+      socketId?.emit("notification", {
         title: "New Question",
         message: `You have a new question for the course: ${data[activeVideo]?.title}`,
         userId: user._id,
@@ -191,7 +194,7 @@ const CourseContentMedia = ({
     if (isReviewSuccess) {
       toast.success("Review submitted successfully");
       refetch();
-      socketId.emit("notification", {
+      socketId?.emit("notification", {
         title: "New Review",
         message: `You have a new review for the course: ${data[activeVideo]?.title}`,
         userId: user._id,

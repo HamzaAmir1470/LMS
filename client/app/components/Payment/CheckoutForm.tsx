@@ -14,7 +14,10 @@ import socketIO from "socket.io-client";
 
 const ENDPOINT =
   process.env.NEXT_PUBLIC_SOCKET_ENDPOINT || "http://localhost:8000";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+const isSocketEnabled = process.env.NEXT_PUBLIC_ENABLE_SOCKET === "true";
+const socketId = isSocketEnabled
+  ? socketIO(ENDPOINT, { transports: ["websocket"] })
+  : null;
 
 type Props = {
   setOpen: any;
@@ -82,7 +85,7 @@ const CheckoutForm = ({ setOpen, data, user, setIsLoading }: Props) => {
       // because 'skip' becomes false. RTQ Query handles the fetch instantly.
       setLoadUser(true);
 
-      socketId.emit("notification", {
+      socketId?.emit("notification", {
         title: "New Order",
         message: `You have a new order for the course: ${data.name}`,
         userId: user._id,
