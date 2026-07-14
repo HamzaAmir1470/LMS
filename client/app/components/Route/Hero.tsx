@@ -5,10 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { FC } from "react";
 import { BiSearch } from "react-icons/bi";
+import { useRouter } from "next/navigation";
 
 const Hero: FC = () => {
+  const { data } = useGetHeroDataQuery("Banner", {});
+  const [search, setSearch] = React.useState("");
+  const router = useRouter();
 
-  const { data, refetch } = useGetHeroDataQuery("Banner");
+  const handleSearch = (e) => {
+    if (search === "") return;
+    router.push(`/courses?title=${search}`);
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col 1000px:flex-row items-center justify-center relative overflow-hidden px-4 1000px:px-12 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -42,10 +49,18 @@ const Hero: FC = () => {
           <input
             type="search"
             placeholder="Search Courses.."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                router.push(`/courses?search=${search}`);
+              }
+            }}
             className="bg-transparent text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 font-Josefin font-[500] pl-4 pr-[60px] w-full h-full outline-none text-[16px]"
           />
           <button
             type="button"
+            onClick={handleSearch}
             className="absolute flex items-center justify-center w-[50px] h-[50px] right-0 top-0 bg-[#21b3e4] hover:bg-[#1da0ce] transition-colors duration-300 rounded-r-[5px] cursor-pointer"
           >
             <BiSearch className="text-white text-2xl" />

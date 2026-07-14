@@ -2,7 +2,7 @@ import { styles } from "@/app/styles/style";
 import CoursePlayer from "@/app/utils/CoursePlayer";
 import { Ratings } from "@/app/utils/Ratings";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoCheckmarkDoneOutline, IoCloseOutline } from "react-icons/io5";
 import { VscTriangleDown, VscTriangleUp } from "react-icons/vsc";
 import { format } from "timeago.js";
@@ -10,25 +10,27 @@ import CourseContentList from "../Course/CourseContentList";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "../Payment/CheckoutForm";
 import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
-import { MdVerified } from "react-icons/md"; 
-
+import { MdVerified } from "react-icons/md";
+import { toast } from "react-hot-toast";
 
 type Props = {
   data: any;
   clientSecret: string;
   stripePromise: any;
+  setRoute: any;
+  setOpen: any;
 };
-
 
 // Sub-component to manage "Show Replies" state cleanly per review
 const ReviewCard = ({ item }: { item: any }) => {
   const [showReplies, setShowReplies] = useState(false);
   const avatarUrl = item?.user?.avatar?.url || item?.user?.avatar;
-  
+
   // Filter admin replies
-  const adminReplies = item?.commentReplies?.filter(
-    (reply: any) => reply?.user?.role === "admin"
-  ) || [];
+  const adminReplies =
+    item?.commentReplies?.filter(
+      (reply: any) => reply?.user?.role === "admin",
+    ) || [];
 
   return (
     <div className="w-full pb-4 border-b border-[#0000001a] dark:border-[#ffffff1a]">
@@ -73,9 +75,14 @@ const ReviewCard = ({ item }: { item: any }) => {
               onClick={() => setShowReplies(!showReplies)}
             >
               {showReplies ? (
-                <>Hide Replies <VscTriangleUp size={16} /></>
+                <>
+                  Hide Replies <VscTriangleUp size={16} />
+                </>
               ) : (
-                <>All Replies ({adminReplies.length}) <VscTriangleDown size={16} /></>
+                <>
+                  All Replies ({adminReplies.length}){" "}
+                  <VscTriangleDown size={16} />
+                </>
               )}
             </span>
           )}
@@ -86,10 +93,14 @@ const ReviewCard = ({ item }: { item: any }) => {
       {showReplies && adminReplies.length > 0 && (
         <div className="w-full pl-[20px] 800px:pl-[60px] mt-3 flex flex-col gap-3 transition-all duration-300">
           {adminReplies.map((reply: any, rIndex: number) => {
-            const replyAvatarUrl = reply?.user?.avatar?.url || reply?.user?.avatar;
+            const replyAvatarUrl =
+              reply?.user?.avatar?.url || reply?.user?.avatar;
 
             return (
-              <div className="flex gap-3 bg-slate-100 dark:bg-slate-800/50 p-3 rounded-lg" key={rIndex}>
+              <div
+                className="flex gap-3 bg-slate-100 dark:bg-slate-800/50 p-3 rounded-lg"
+                key={rIndex}
+              >
                 {/* Admin Avatar */}
                 <div className="w-[40px] h-[40px] flex-shrink-0">
                   {replyAvatarUrl ? (
@@ -114,7 +125,10 @@ const ReviewCard = ({ item }: { item: any }) => {
                       {reply?.user?.name}
                     </h5>
                     {/* Verified Icon Implementation */}
-                    <MdVerified size={18} className="text-[#0052FF] dark:text-[#3b82f6] flex-shrink-0" />
+                    <MdVerified
+                      size={18}
+                      className="text-[#0052FF] dark:text-[#3b82f6] flex-shrink-0"
+                    />
                   </div>
                   <p className="text-black dark:text-white font-Poppins text-[15px] mt-0.5">
                     {reply?.comment}
@@ -132,11 +146,23 @@ const ReviewCard = ({ item }: { item: any }) => {
   );
 };
 
-const CourseDetails = ({ data, clientSecret, stripePromise }: Props) => {
+const CourseDetails = ({
+  data,
+  clientSecret,
+  stripePromise,
+  setRoute,
+  setOpen: openAuthModel,
+}: Props) => {
   const [open, setOpen] = React.useState(false);
-  const [visibleComments, setVisibleComments] = useState(3); // State for limiting comments
+  const [user, setUser] = React.useState<any>();
+  const [visibleComments, setVisibleComments] = useState(3);
   const { data: userData } = useLoadUserQuery(undefined, {});
-  const user = userData?.user;
+
+
+  useEffect(() => {
+    setUser(userData?.user);
+  }, [userData?.user]);
+
 
   const estimatedPrice = data?.estimatedPrice || 0;
   const price = data?.price || 0;
@@ -153,7 +179,13 @@ const CourseDetails = ({ data, clientSecret, stripePromise }: Props) => {
     user && user?.courses?.find((item: any) => item.courseId === data?._id);
 
   const handleOrder = () => {
-    setOpen(true);
+    if (user) {
+      setOpen(true);
+    } else {
+      setRoute("Login");
+      openAuthModel(true);
+      toast.error("Please login to enroll in the course");
+    }
   };
 
   return (
@@ -246,7 +278,7 @@ const CourseDetails = ({ data, clientSecret, stripePromise }: Props) => {
               {data?.reviews &&
                 [...data.reviews]
                   .reverse()
-                  .slice(0, visibleComments) 
+                  .slice(0, visibleComments)
                   .map((item: any, index: number) => (
                     <ReviewCard item={item} key={index} />
                   ))}
