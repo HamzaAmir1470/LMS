@@ -158,11 +158,9 @@ const CourseDetails = ({
   const [visibleComments, setVisibleComments] = useState(3);
   const { data: userData } = useLoadUserQuery(undefined, {});
 
-
   useEffect(() => {
     setUser(userData?.user);
   }, [userData?.user]);
-
 
   const estimatedPrice = data?.estimatedPrice || 0;
   const price = data?.price || 0;
@@ -373,7 +371,7 @@ const CourseDetails = ({
             <div className="w-full my-auto text-black">
               {stripePromise && clientSecret ? (
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm setOpen={setOpen} data={data} />
+                  <CheckoutForm setOpen={setOpen} data={data} user={user} />
                 </Elements>
               ) : (
                 <div className="flex justify-center items-center h-[200px]">

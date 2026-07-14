@@ -10,13 +10,18 @@ import { useCreateOrderMutation } from "@/redux/features/orders/orderApi";
 import { styles } from "@/app/styles/style";
 import toast from "react-hot-toast";
 import { redirect } from "next/navigation";
+import socketIO from "socket.io-client";
+const ENDPOINT =
+  process.env.NEXT_PUBLIC_SOCKET_ENDPOINT || "http://localhost:8000";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 type Props = {
   setOpen: any;
   data: any;
+  user: any;
 };
 
-const CheckoutForm = ({ setOpen, data }: Props) => {
+const CheckoutForm = ({ setOpen, data, user }: Props) => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -53,6 +58,11 @@ const CheckoutForm = ({ setOpen, data }: Props) => {
   useEffect(() => {
     if (orderData) {
       setLoadUser(true);
+      socketId.emit("notification", { 
+        title: "New Order",
+        message: `You have a new order for the course: ${data.name}`,
+        userId: user._id,
+       });
       redirect(`/course-access/${data._id}`);
     }
     if (stripeError) {

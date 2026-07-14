@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { Provider } from "react-redux";
 import { store } from "../redux/store";
 import { SessionProvider } from "next-auth/react";
@@ -12,6 +12,8 @@ interface ProviderProps {
 }
 
 export function Providers({ children }: ProviderProps) {
+
+
   return (
     <SessionProvider>
       <Provider store={store}>

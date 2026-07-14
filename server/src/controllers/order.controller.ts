@@ -15,7 +15,7 @@ import Stripe from "stripe";
 import { redis } from "../utils/redis.js";
 import { fileURLToPath } from "url";
 
-// 2. Define __filename and __dirname
+// Define __filename and __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -108,9 +108,12 @@ export const createOrder = CatchAsyncErrors(
         message: `You have a new order for the course: ${course.name}`,
       });
 
-      course.purchased ? (course.purchased += 1) : course.purchased;
+      course.purchased = (course?.purchased ?? 0) + 1;
 
       await course.save();
+
+      // FIX: Clear the course cache in Redis to force an update next time it's fetched
+      await redis.del(`course:${courseId}`);
 
       NewOrder(data, res, next);
     } catch (error: any) {

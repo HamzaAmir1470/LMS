@@ -20,6 +20,29 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Helper function to update Redis cache
+const updateCourseCache = async (courseId: string, courseData: any) => {
+  // We strip sensitive/unnecessary data matching the getSingleCourse selection
+  const cachedCourse = { ...courseData.toObject() };
+  if (cachedCourse.courseData) {
+    cachedCourse.courseData = cachedCourse.courseData.map((item: any) => {
+      const parsedItem = { ...item };
+      delete parsedItem.videoUrl;
+      delete parsedItem.suggestion;
+      delete parsedItem.questions;
+      delete parsedItem.links;
+      return parsedItem;
+    });
+  }
+
+  await redis.set(
+    `course:${courseId}`,
+    JSON.stringify(cachedCourse),
+    "EX",
+    604800, // 7 days
+  );
+};
+
 // upload course
 export const uploadCourse = CatchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -94,6 +117,11 @@ export const editCourse = CatchAsyncErrors(
         },
       );
 
+      if (updatedCourse) {
+        // FIX: Update Redis cache with the newly updated course
+        await updateCourseCache(courseId, updatedCourse);
+      }
+
       res.status(200).json({
         success: true,
         message: "Course updated successfully",
@@ -123,12 +151,14 @@ export const getSingleCourse = CatchAsyncErrors(
           "-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links",
         );
 
-        await redis.set(
-          `course:${courseId}`,
-          JSON.stringify(course),
-          "EX",
-          604800,
-        ); // 7 days in seconds
+        if (course) {
+          await redis.set(
+            `course:${courseId}`,
+            JSON.stringify(course),
+            "EX",
+            604800,
+          ); // 7 days in seconds
+        }
 
         res.status(200).json({
           success: true,
@@ -236,6 +266,11 @@ export const addQuestion = CatchAsyncErrors(
       // save the updated course document
       await course?.save();
 
+      // FIX: Update Redis cache
+      if (course) {
+        await updateCourseCache(courseId, course);
+      }
+
       res.status(200).json({
         success: true,
         course,
@@ -293,6 +328,11 @@ export const addAnswer = CatchAsyncErrors(
 
       // save the updated course document
       await course?.save();
+
+      // FIX: Update Redis cache
+      if (course) {
+        await updateCourseCache(courseId, course);
+      }
 
       if (req.user?._id === question.user._id) {
         // create an in-app notification if the user answers their own question
@@ -388,6 +428,9 @@ export const addReview = CatchAsyncErrors(
 
       await course.save();
 
+      // FIX: Update Redis cache
+      await updateCourseCache(courseId, course);
+
       // FIX: Included the review comment inside the notification message body
       await NotificationModel.create({
         userId: req.user!._id.toString(),
@@ -431,7 +474,7 @@ export const addReplyToReview = CatchAsyncErrors(
       }
 
       const replyData: any = {
-        user: req?.user, 
+        user: req?.user,
         comment,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -443,6 +486,9 @@ export const addReplyToReview = CatchAsyncErrors(
 
       review.commentReplies.push(replyData);
       await course.save();
+
+      // FIX: Update Redis cache
+      await updateCourseCache(courseId, course);
 
       res.status(200).json({
         success: true,

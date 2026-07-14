@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Providers } from "./Provider";
 
+
 export const metadata: Metadata = {
   title: "E-Learning",
   description:
@@ -37,6 +38,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html
       lang="en"

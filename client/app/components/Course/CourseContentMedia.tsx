@@ -20,6 +20,11 @@ import {
   useAddReplyInReviewMutation, // Added mutation hook for review replies
 } from "@/redux/features/courses/coursesApi";
 import { format } from "timeago.js";
+import socketIO from "socket.io-client";
+import { title } from "process";
+const ENDPOINT =
+  process.env.NEXT_PUBLIC_SOCKET_ENDPOINT || "http://localhost:8000";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 type Props = {
   data: any[];
@@ -56,7 +61,6 @@ const CourseContentMedia = ({
   const [showReviewReplies, setShowReviewReplies] = useState<{
     [key: string]: boolean;
   }>({});
-  
 
   const [
     addAnswerInQuestion,
@@ -123,7 +127,7 @@ const CourseContentMedia = ({
       toast.error("Reply cannot be empty");
     } else {
       addReplyInReview({
-        comment: reviewReply, 
+        comment: reviewReply,
         courseId: id,
         reviewId: rId,
       });
@@ -134,6 +138,13 @@ const CourseContentMedia = ({
     if (isAnswerSuccess) {
       toast.success("Answer submitted successfully");
       refetch();
+      if (user.role !== "admin") {
+        socketId.emit("notification", {
+          title: "New reply received",
+          message: `You have a new question reply in ${data[activeVideo]?.title}`,
+          userId: user._id,
+        });
+      }
     }
     if (answerError) {
       if ("data" in answerError) {
@@ -147,6 +158,11 @@ const CourseContentMedia = ({
     if (isSuccess) {
       toast.success("Question submitted successfully");
       refetch();
+      socketId.emit("notification", {
+        title: "New Question",
+        message: `You have a new question for the course: ${data[activeVideo]?.title}`,
+        userId: user._id,
+      });
     }
     if (error) {
       if ("data" in error) {
@@ -175,6 +191,11 @@ const CourseContentMedia = ({
     if (isReviewSuccess) {
       toast.success("Review submitted successfully");
       refetch();
+      socketId.emit("notification", {
+        title: "New Review",
+        message: `You have a new review for the course: ${data[activeVideo]?.title}`,
+        userId: user._id,
+      });
     }
     if (reviewError) {
       if ("data" in reviewError) {

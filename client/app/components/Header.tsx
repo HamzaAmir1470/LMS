@@ -9,7 +9,6 @@ import CustomModel from "../utils/CustomModel";
 import Login from "../components/Auth/Login";
 import SignUp from "../components/Auth/SignUp";
 import Verification from "../components/Auth/Verification";
-import { useSelector } from "react-redux";
 import Image from "next/image";
 import defaultAvatar from "../../public/assets/default-avatar.png";
 import { signOut, useSession } from "next-auth/react";
@@ -18,6 +17,7 @@ import {
   useSocialAuthMutation,
 } from "../../redux/features/auth/authApi";
 import toast from "react-hot-toast";
+import { useLoadUserQuery } from "@/redux/features/api/apiSlice";
 
 type Props = {
   open: boolean;
@@ -30,7 +30,11 @@ type Props = {
 const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   const [active, setActive] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
-  const { user } = useSelector((state: any) => state.auth);
+  const {
+    data: userData,
+    isLoading,
+    refetch,
+  } = useLoadUserQuery(undefined, {});
   const { data } = useSession();
   const [socialAuth, { isSuccess }] = useSocialAuthMutation();
   const [logOut, setLogOut] = useState(false);
@@ -44,24 +48,25 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
   };
 
   useEffect(() => {
-    if (!user && data) {
+    if (!userData && data) {
       socialAuth({
         email: data.user?.email,
         name: data.user?.name,
         avatar: data.user?.image,
       });
+      refetch();
     }
-  }, [user, data, socialAuth]);
+  }, [userData, data, socialAuth, refetch]);
 
   useEffect(() => {
     if (!isSuccess) return;
 
     toast.success("Login successful!");
 
-    if (data === null && !logOut) {
+    if (data === null && !logOut && !isLoading && !userData) {
       setLogOut(true);
     }
-  }, [data, isSuccess, logOut]);
+  }, [data, isSuccess, logOut, isLoading, userData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,10 +81,6 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
 
   return (
     <>
-      {/* FIXED: Extracted full layout wrapper rules. 
-        When 'active' is true, we add a dummy component placeholder ('h-[80px]') 
-        so the main page code below doesn't pop or slide upwards violently when the navigation detaches.
-      */}
       <div className={`w-full relative h-[80px] z-[80]`}>
         <div
           className={`${
@@ -111,12 +112,12 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                   />
                 </div>
 
-                {user ? (
+                {userData ? (
                   <Link href="/profile" className="flex items-center">
                     <Image
                       src={
-                        user?.avatar?.url?.trim()
-                          ? user.avatar.url
+                        userData?.avatar?.url?.trim()
+                          ? userData.avatar.url
                           : defaultAvatar
                       }
                       alt="User Avatar"
@@ -161,7 +162,7 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
 
                 {/* Bottom Footer Details */}
                 <div className="pb-6">
-                  {!user && (
+                  {!userData && (
                     <div className="flex justify-center mb-6">
                       <button
                         onClick={() => {
@@ -202,6 +203,7 @@ const Header: FC<Props> = ({ open, setOpen, activeItem, route, setRoute }) => {
                     : Verification
               }
               setRoute={setRoute}
+              refetch={refetch}
             />
           )}
       </div>
