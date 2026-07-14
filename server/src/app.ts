@@ -11,7 +11,7 @@ import layoutRouter from "./routes/layout.route.js";
 import analyticsRouter from "./routes/analytics.route.js";
 import ErrorHandler from "./utils/ErrorHandler.js";
 import { rateLimit } from "express-rate-limit";
-export const app = express();
+const app = express();
 
 const allowedOrigins = (
   process.env.CORS_ORIGIN ||
@@ -73,3 +73,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(limiter);
 
 app.use(ErrorMiddleware);
+
+
+export default app;
