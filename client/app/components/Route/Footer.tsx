@@ -202,7 +202,7 @@ const Footer = (props: Props) => {
               <p className="text-center text-sm text-gray-600 dark:text-gray-400">
                 &copy; {currentYear}{" "}
                 <span className="font-semibold text-black dark:text-white">
-                  ELearning
+                  DevLearn
                 </span>
                 . All Rights Reserved.
               </p>
