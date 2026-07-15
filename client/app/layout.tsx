@@ -5,9 +5,9 @@ import { Providers } from "./Provider";
 
 
 export const metadata: Metadata = {
-  title: "E-Learning",
+  title: "DevLearn",
   description:
-    "E-Learning is a platform for students to learn and get help from teachers.",
+    "DevLearn is a platform for students to learn and get help from teachers.",
   keywords: ["Programming", "MERN", "Redux", "Machine Learning"],
 };
 
