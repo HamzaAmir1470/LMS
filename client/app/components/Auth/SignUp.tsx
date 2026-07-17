@@ -66,51 +66,65 @@ const SignUp: FC<Props> = ({ setRoute }) => {
     formik;
 
   return (
-    <div className="w-full">
-      <h1 className={`${styles.title}`}>Join to E-Learning</h1>
+    <div className="w-full px-4 sm:px-6 md:px-8">
+      <h1
+        className={`${styles.title} text-center text-xl sm:text-2xl md:text-3xl`}
+      >
+        Sign Up{" "}
+      </h1>
       <form onSubmit={handleSubmit}>
         {/* Name Field */}
         <div className="w-full mb-4">
-          <label className={`${styles.label}`}>Enter your name</label>
+          <label className={`${styles.label} text-sm sm:text-base`}>
+            Enter your name
+          </label>
           <input
             type="text"
             name="name"
             placeholder="John Doe"
-            className={`${errors.name && touched.name && "border-red-500"} ${styles.input}`}
+            className={`${errors.name && touched.name && "border-red-500"} ${styles.input} w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3`}
             value={values.name}
             onChange={handleChange}
             onBlur={handleBlur}
           />
           {errors.name && touched.name && (
-            <p className="text-red-500 pt-2 block text-sm">{errors.name}</p>
+            <p className="text-red-500 pt-2 block text-xs sm:text-sm">
+              {errors.name}
+            </p>
           )}
         </div>
 
         {/* Email Field */}
         <div className="w-full mb-4">
-          <label className={`${styles.label}`}>Enter your email</label>
+          <label className={`${styles.label} text-sm sm:text-base`}>
+            Enter your email
+          </label>
           <input
             type="email"
             name="email"
-            placeholder="loginmail@gmail.com"
-            className={`${errors.email && touched.email && "border-red-500"} ${styles.input}`}
+            placeholder="John@gmail.com"
+            className={`${errors.email && touched.email && "border-red-500"} ${styles.input} w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3`}
             value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
           />
           {errors.email && touched.email && (
-            <p className="text-red-500 pt-2 block text-sm">{errors.email}</p>
+            <p className="text-red-500 pt-2 block text-xs sm:text-sm">
+              {errors.email}
+            </p>
           )}
         </div>
 
         {/* Password Field */}
         <div className="w-full relative mb-4">
-          <label className={`${styles.label}`}>Enter your password</label>
+          <label className={`${styles.label} text-sm sm:text-base`}>
+            Enter your password
+          </label>
           <input
-            type={show ? "text" : "password"} // Fixed: Dynamically flips type
+            type={show ? "text" : "password"}
             name="password"
             placeholder="********"
-            className={`${errors.password && touched.password && "border-red-500"} ${styles.input}`}
+            className={`${errors.password && touched.password && "border-red-500"} ${styles.input} w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12`}
             value={values.password}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -118,50 +132,54 @@ const SignUp: FC<Props> = ({ setRoute }) => {
 
           {/* Toggle Eye Icons */}
           <div
-            className="absolute right-3 top-[38px] cursor-pointer text-gray-500 dark:text-gray-400"
+            className="absolute right-3 top-[38px] sm:top-[42px] cursor-pointer text-gray-500 dark:text-gray-400"
             onClick={() => setShow(!show)}
           >
             {show ? (
-              <AiOutlineEye size={25} />
+              <AiOutlineEye size={20} className="sm:w-6 sm:h-6" />
             ) : (
-              <AiOutlineEyeInvisible size={25} />
+              <AiOutlineEyeInvisible size={20} className="sm:w-6 sm:h-6" />
             )}
           </div>
 
           {errors.password && touched.password && (
-            <p className="text-red-500 pt-2 block text-sm">{errors.password}</p>
+            <p className="text-red-500 pt-2 block text-xs sm:text-sm">
+              {errors.password}
+            </p>
           )}
         </div>
 
         {/* Submit Button */}
         <div className="w-full mt-6">
-          <input type="submit" value="Sign Up" className={`${styles.button}`} />
+          <input
+            type="submit"
+            value="Sign Up"
+            className={`${styles.button} w-full text-sm sm:text-base py-2 sm:py-3 px-4`}
+          />
         </div>
 
-        <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
-          {" "}
-          {/* Fixed space bug */}
+        <h5 className="text-center pt-4 font-Poppins text-xs sm:text-sm md:text-[14px] text-black dark:text-white">
           Or join with
         </h5>
 
         {/* Social Providers */}
-        <div className="flex items-center justify-center my-3 gap-4">
+        <div className="flex items-center justify-center my-3 gap-4 sm:gap-6">
           <FaGoogle
             size={20}
-            className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition"
+            className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition sm:w-5 sm:h-5 md:w-6 md:h-6"
           />
           <AiFillGithub
             size={24}
-            className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition"
+            className="cursor-pointer text-gray-700 dark:text-white hover:opacity-80 transition sm:w-6 sm:h-6 md:w-7 md:h-7"
           />
         </div>
 
         {/* Route Selector Toggle */}
-        <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
+        <h5 className="text-center pt-4 font-Poppins text-xs sm:text-sm md:text-[14px] text-black dark:text-white">
           Already have an account?{" "}
           <span
             className="text-[#2190ff] pl-1 cursor-pointer hover:underline"
-            onClick={() => setRoute("Login")} // Matches the route checker key exactly
+            onClick={() => setRoute("Login")}
           >
             Log in
           </span>

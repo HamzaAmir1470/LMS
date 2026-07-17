@@ -3,6 +3,11 @@ dotenv.config();
 import nodemailer, { type Transporter } from "nodemailer";
 import ejs from "ejs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// Get the current directory path in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface EmailOptions {
   email: string;
@@ -23,12 +28,9 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
   });
 
   const { email, subject, template, data } = options;
-  const templatePath = path.join(
-    process.cwd(),
-    "src",
-    "mails",
-    `${template}.ejs`,
-  );
+  
+  const templatePath = path.join(__dirname, "../mails", `${template}.ejs`);
+
   const html: string = await ejs.renderFile(templatePath, data);
 
   const mailOptions = {
@@ -37,6 +39,7 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
     subject,
     html,
   };
+
   await transporter.sendMail(mailOptions);
 };
 

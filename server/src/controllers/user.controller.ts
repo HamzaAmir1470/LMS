@@ -57,7 +57,7 @@ export const registerationUser = CatchAsyncErrors(
       await sendEmail({
         email: user.email,
         subject: "Activate your account",
-        template: "activation-mail", // no .ejs here
+        template: "activation-mail", 
         data,
       });
 

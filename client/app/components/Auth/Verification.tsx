@@ -81,18 +81,30 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
       inputRefs[index + 1].current?.focus();
     }
   };
+
   return (
-    <div>
-      <h1 className={`${styles.title}`}>Verify your email</h1>
+    <div className="w-full px-4 sm:px-6 md:px-8">
+      <h1
+        className={`${styles.title} text-center text-xl sm:text-2xl md:text-3xl`}
+      >
+        Verify your email
+      </h1>
       <br />
-      <div className={`w-full flex items-center justify-center mt-2`}>
-        <div className="w-[80px] h-[80px] rounded-full bg-[#497DF2] flex items-center justify-center">
-          <VscWorkspaceTrusted size={40} />
+
+      {/* Icon Container */}
+      <div className="w-full flex items-center justify-center mt-2">
+        <div className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] md:w-[80px] md:h-[80px] rounded-full bg-[#497DF2] flex items-center justify-center">
+          <VscWorkspaceTrusted
+            size={30}
+            className="sm:w-[35px] sm:h-[35px] md:w-[40px] md:h-[40px]"
+          />
         </div>
       </div>
       <br />
       <br />
-      <div className="w-full m-auto flex items-center justify-around">
+
+      {/* OTP Input Fields */}
+      <div className="w-full m-auto flex items-center justify-center gap-2 sm:gap-3 md:gap-4">
         {Object.keys(verifyNumber).map((key, index) => (
           <input
             key={key}
@@ -100,7 +112,11 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
             type="text"
             maxLength={1}
             value={verifyNumber[key as keyof VerifyNumber]}
-            className={`w-[65px] h-[65px] bg-transparent border-[3px] rounded-[10px] flex items-center justify-center text-black dark:text-white justify-center text-[18px] font-Poppins outline-none text-center ${invalidError ? "shake border-red-500" : "dark:border-white border[#497DF2]"}`}
+            className={`w-[50px] h-[50px] sm:w-[55px] sm:h-[55px] md:w-[65px] md:h-[65px] bg-transparent border-[3px] rounded-[10px] flex items-center justify-center text-black dark:text-white text-[16px] sm:text-[18px] md:text-[20px] font-Poppins outline-none text-center ${
+              invalidError
+                ? "shake border-red-500"
+                : "dark:border-white border-[#497DF2]"
+            }`}
             placeholder=""
             onChange={(e) => handleInputChange(index, e.target.value)}
           />
@@ -108,18 +124,28 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
       </div>
       <br />
       <br />
+
+      {/* Verify Button */}
       <div className="w-full flex items-center justify-center">
-        <button onClick={verificationHandler} className={`${styles.button}`}>
+        <button
+          onClick={verificationHandler}
+          className={`${styles.button} w-full sm:w-auto text-sm sm:text-base py-2 sm:py-3 px-4 sm:px-8`}
+        >
           Verify OTP
         </button>
       </div>
       <br />
-      <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
+
+      {/* Resend OTP */}
+      <h5 className="text-center pt-4 font-Poppins text-xs sm:text-sm md:text-[14px] text-black dark:text-white">
         Didn&apos;t receive the OTP?{" "}
-        <span className="text-[16px] text-blue-500 cursor-pointer">Resend</span>
+        <span className="text-[14px] sm:text-[16px] text-blue-500 cursor-pointer hover:underline">
+          Resend
+        </span>
       </h5>
-      <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white">
-        {" "}
+
+      {/* Navigation Links */}
+      <h5 className="text-center pt-4 font-Poppins text-xs sm:text-sm md:text-[14px] text-black dark:text-white">
         <span
           className="text-[#2190ff] pl-1 cursor-pointer hover:underline"
           onClick={() => setRoute("SignUp")}
@@ -133,8 +159,6 @@ const Verification: React.FC<Props> = ({ setRoute }) => {
           Sign in
         </span>
       </h5>
-
-      <h5 className="text-center pt-4 font-Poppins text-[14px] text-black dark:text-white"></h5>
     </div>
   );
 };
